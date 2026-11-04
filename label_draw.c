@@ -18,7 +18,7 @@
 #define BEAT_PX_MAX 20
 #define PX_MIN 12
 
-static const uint32_t GROUP_COL[] = { COL_BLUE, COL_ORANGE, COL_YELLOW, COL_GREEN, COL_PURPLE };
+static const uint32_t GROUP_COL[] = { COL_BLUE, COL_ORANGE, COL_LIME, COL_GREEN, COL_PURPLE };
 
 static int width(const az_core_v1 *C, const char *s, int px)
 {

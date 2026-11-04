@@ -30,7 +30,7 @@ The pictures are photos of the deck's screen, straightened; their colors are clo
 |---|---|
 | blue | DELAY, ECHO, PING PONG, SPIRAL, HELIX |
 | orange | REVERB |
-| yellow | FLANGER, PHASER, FILTER, TRIPLET FILTER, TRANS |
+| lime | FLANGER, PHASER, FILTER, TRIPLET FILTER, TRANS |
 | green | ROLL, TRIPLET ROLL |
 | purple | MOBIUS |
 

@@ -161,7 +161,7 @@ static void test_names_and_groups(void)
     CHECK(streq(fxd_name(0), "DELAY") && streq(fxd_name(13), "MOBIUS"));
     for (int e = 0; e <= 4; e++) CHECK(fxd_group(e) == FXD_BLUE);
     CHECK(fxd_group(5) == FXD_ORANGE);
-    for (int e = 6; e <= 10; e++) CHECK(fxd_group(e) == FXD_YELLOW);
+    for (int e = 6; e <= 10; e++) CHECK(fxd_group(e) == FXD_LIME);
     CHECK(fxd_group(11) == FXD_GREEN && fxd_group(12) == FXD_GREEN);
     CHECK(fxd_group(13) == FXD_PURPLE);
 }

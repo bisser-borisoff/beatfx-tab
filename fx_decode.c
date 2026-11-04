@@ -11,8 +11,8 @@ static const char *const NAME[FX_N] = {
 };
 
 static const unsigned char GROUP[FX_N] = {
-    FXD_BLUE,   FXD_BLUE,   FXD_BLUE,   FXD_BLUE,   FXD_BLUE,  FXD_ORANGE, FXD_YELLOW,
-    FXD_YELLOW, FXD_YELLOW, FXD_YELLOW, FXD_YELLOW, FXD_GREEN, FXD_GREEN,  FXD_PURPLE,
+    FXD_BLUE,   FXD_BLUE,   FXD_BLUE,   FXD_BLUE,   FXD_BLUE,  FXD_ORANGE, FXD_LIME,
+    FXD_LIME, FXD_LIME, FXD_LIME, FXD_LIME, FXD_GREEN, FXD_GREEN,  FXD_PURPLE,
 };
 
 /* The beat values the deck's effects use, smallest first, with the beat index (0x56) seen

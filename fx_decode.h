@@ -21,7 +21,7 @@
 
 #define FXD_MIN_LEN 0x5c
 
-enum { FXD_BLUE, FXD_ORANGE, FXD_YELLOW, FXD_GREEN, FXD_PURPLE };
+enum { FXD_BLUE, FXD_ORANGE, FXD_LIME, FXD_GREEN, FXD_PURPLE };
 
 typedef struct {
     int valid;        /* 0 = show nothing (stock look) */

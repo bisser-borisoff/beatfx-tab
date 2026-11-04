@@ -126,12 +126,29 @@ static void test_sounding_effects_take_their_group_colour(void)
     CHECK(all_inside());
 
     paint(st(10, 1, -1, "1"));
-    CHECK(background_is(COL_YELLOW));
+    CHECK(background_is(COL_LIME));
     paint(st(11, 1, -1, "1"));
     CHECK(background_is(COL_GREEN));
     paint(st(13, 1, -1, "4"));
     CHECK(background_is(COL_PURPLE));
     CHECK(all_inside());
+}
+
+/* The stock BEAT FX panel's X-PAD colours, matched on the deck against swatches beside the open
+ * panel (b.sr, 2026-11-04): one sounding effect from each group, as literal values so a
+ * changed constant shows up here. */
+static void test_groups_take_the_stock_panels_colours(void)
+{
+    paint(st(4, 1, -1, "1")); /* HELIX: blue */
+    CHECK(background_is(0x00b4f0));
+    paint(st(5, 1, 50, NULL)); /* REVERB: orange */
+    CHECK(background_is(0xf07828));
+    paint(st(10, 1, -1, "1")); /* TRANS: lime, like FLANGER, PHASER, FILTER, TRIPLET FILTER */
+    CHECK(background_is(0x98d02c));
+    paint(st(12, 1, -1, "1/3")); /* TRIPLET ROLL: green, like ROLL */
+    CHECK(background_is(0x3c9820));
+    paint(st(13, 1, -1, "4")); /* MOBIUS: purple */
+    CHECK(background_is(0xc050ff));
 }
 
 static void test_longest_name_fits_before_the_box(void)
@@ -226,7 +243,7 @@ static void test_off_effect_name_is_underlined_in_its_group_colour(void)
     paint(st(5, 0, 40, NULL));
     check_underlined("REVERB", COL_ORANGE);
     paint(st(6, 0, -1, "1"));
-    check_underlined("FLANGER", COL_YELLOW);
+    check_underlined("FLANGER", COL_LIME);
     paint(st(11, 0, -1, "1/4"));
     check_underlined("ROLL", COL_GREEN);
     paint(st(13, 0, -1, "2"));
@@ -239,13 +256,13 @@ static void test_underline_follows_a_shrunk_name(void)
     const rec_t *n = find_text("TRIPLET FILTER");
     if (!n) n = find_text("TRI FILTER");
     CHECK(n != NULL);
-    if (n) check_underlined(n->s, COL_YELLOW);
+    if (n) check_underlined(n->s, COL_LIME);
 }
 
 static void test_on_effect_has_no_underline(void)
 {
     const int fx[] = { 0, 5, 6, 11, 13 };
-    const uint32_t col[] = { COL_BLUE, COL_ORANGE, COL_YELLOW, COL_GREEN, COL_PURPLE };
+    const uint32_t col[] = { COL_BLUE, COL_ORANGE, COL_LIME, COL_GREEN, COL_PURPLE };
     for (int i = 0; i < 5; i++) {
         paint(st(fx[i], 1, 40, fx[i] == 5 ? NULL : "1"));
         CHECK(background_is(col[i]));
@@ -347,6 +364,7 @@ int main(void)
 
     test_echo_off_is_grey_with_white_name_and_beat_box();
     test_sounding_effects_take_their_group_colour();
+    test_groups_take_the_stock_panels_colours();
     test_longest_name_fits_before_the_box();
     test_widest_beat_fits_in_the_box();
     test_invalid_state_draws_only_the_grey_tab_and_arrow();
