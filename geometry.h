@@ -2,7 +2,7 @@
  *
  * geometry: every value to calibrate on the deck, in one place. Screen pixels (1280x800)
  * and 0xRRGGBB colours. First values: measured from photos and recorded touches
- * (2026-11-04); see the spec, sections 3 and 6.
+ * (2026-11-04), then calibrated on the deck in v0.1.1 to v0.1.4.
  */
 #ifndef BEATFX_GEOMETRY_H
 #define BEATFX_GEOMETRY_H
@@ -19,7 +19,7 @@
 
 /* Only the stock tab's own zone opens the panel, from TAB_X0 (its left edge on the photos) to
  * the right edge: on the deck a tap on the name, left of it, did not, and a tap in the grey
- * just left of the value box did (Бисер, 2026-11-04). The arrow and the value box are drawn
+ * just left of the value box did (b.sr, 2026-11-04). The arrow and the value box are drawn
  * inside it and the name left of it, ZONE_MARGIN pixels clear of the edge either side. */
 #define TAB_X0 1197
 #define TAB_Y0 215
@@ -36,7 +36,7 @@
 
 /* Background: grey while the effect is off, the effect's X-PAD colour while it sounds.
  * v0.1.1: the grey darkened to the stock tab's look on the deck (white text was hard to read
- * on 0x8d939a), the blue darkened at Бисер's request (was 0x5ec4e8). */
+ * on 0x8d939a), the blue darkened at b.sr's request (was 0x5ec4e8). */
 #define COL_OFF 0x5d6268
 #define COL_BLUE 0x3a96dc
 #define COL_ORANGE 0xf0a42c
@@ -49,7 +49,7 @@
 #define COL_BOX 0xf2f2f2      /* the beat value's box */
 #define COL_BOX_TEXT 0x222222
 
-/* While the effect is off, a line in its group's colour under the name (v0.1.2, Бисер's
+/* While the effect is off, a line in its group's colour under the name (v0.1.2, b.sr's
  * pick from the mockup: 3 px), UNDERLINE_GAP pixels below the letters. */
 #define UNDERLINE_H 3
 #define UNDERLINE_GAP 3

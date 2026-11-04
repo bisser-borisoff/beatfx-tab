@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  *
  * beatfx-tab: the collapsed BEAT FX tab on the 2 DECK waveform screen shows the selected
- * effect and its beat value. Spec: docs/specs/2026-11-04-beatfx-tab-design.md.
+ * effect and its beat value. README.md says what it shows and how it is built.
  *
  * Threads:
  *   - the mixer bus thread runs mixer_frame(): it packs the Beat FX report into g_fx;

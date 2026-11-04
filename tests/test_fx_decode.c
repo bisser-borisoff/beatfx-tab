@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Host tests for fx_decode: the values come from two captures on Бисер's XDJ-AZ
- * (firmware 2.01, AZ-MODS 1.2.7), see the spec, section 4. */
+ * Host tests for fx_decode: the values come from two captures on b.sr's XDJ-AZ
+ * (firmware 2.01, AZ-MODS 1.2.7). */
 #include <stdio.h>
 #include <string.h>
 

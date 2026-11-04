@@ -31,7 +31,7 @@ static void test_assignment_is_absolute(void)
 }
 
 /* On the deck only the stock tab's own zone (about x 1197 on) opens the panel: a tap on the
- * name further left did not, yet v0.1.2 counted it and hid the label (Бисер, 2026-11-04). A tap
+ * name further left did not, yet v0.1.2 counted it and hid the label (b.sr, 2026-11-04). A tap
  * in the grey just left of the value box did open it. */
 static void test_only_the_stock_tab_zone_opens(void)
 {

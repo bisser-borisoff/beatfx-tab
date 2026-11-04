@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  *
- * fx_decode: the Beat FX report in AZ_BUS_MIXER_IN frames (measured on the deck, see the
- * spec, section 4):
+ * fx_decode: the Beat FX report in AZ_BUS_MIXER_IN frames (measured on the deck from frame
+ * captures while turning each control):
  *   0x54 bit 0x80  the effect is sounding (ON/OFF button or a finger on the X-PAD)
  *   0x55 >> 4      the effect, 0..13 in knob order (low nibble: X-PAD zone or a flag)
  *   0x56           beat index (REVERB: LENGTH %)

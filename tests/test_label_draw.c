@@ -171,7 +171,7 @@ static void test_invalid_state_draws_only_the_grey_tab_and_arrow(void)
 }
 
 /* v0.1.2: the corners are square. The rounded ones (v0.1.1) were cut in black, which showed
- * as a dead pixel wherever a light part of the waveform ran under the label (Бисер, deck). */
+ * as a dead pixel wherever a light part of the waveform ran under the label (b.sr, deck). */
 static int painted_over(int x, int y)
 {
     for (int i = 1; i < g_n; i++) { /* g_rec[0] is the background */
@@ -311,7 +311,7 @@ static void test_names_stay_left_of_the_stock_tab_zone(void)
     }
 }
 
-/* v0.1.4: while a finger is on the X-PAD, the box says "X-PAD" (Бисер's pick from a mockup),
+/* v0.1.4: while a finger is on the X-PAD, the box says "X-PAD" (b.sr's pick from a mockup),
  * since the beat that sounds is then the pad's, not the BEAT value. */
 static void test_xpad_shows_in_the_box(void)
 {

@@ -215,7 +215,7 @@ int main(void)
     CHECK(g_shown == 1);
 
     /* 10b: a tap on the label's name is outside the stock tab's zone: the deck does not open
-     * the panel, so the label stays (v0.1.2 hid it, Бисер on the deck) */
+     * the panel, so the label stays (v0.1.2 hid it, b.sr on the deck) */
     touch(1150, 260);
     settle();
     CHECK(g_shown == 1);

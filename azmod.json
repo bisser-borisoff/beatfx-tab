@@ -3,16 +3,16 @@
   "id": "beatfx-tab",
   "name": "Beat FX Tab",
   "version": "0.1.4",
-  "author": "biser",
-  "summary": "The collapsed BEAT FX tab shows the selected effect and its beat value.",
-  "description": "Turns the small BEAT FX tab on the right of the 2 DECK waveform screen into a display: the selected effect and its beat value (or LENGTH % for REVERB), grey while the effect is off and in the effect's X-PAD colour while it sounds. It hides while the Beat FX panel is open. It only reads the mixer's Beat FX report and touch positions; it never changes an effect, a frame or a touch.",
+  "author": "b.sr",
+  "summary": "Keep the Beat FX panel closed and still see it all: effect, beat value and on/off, right on the collapsed tab.",
+  "description": "Want your screen space back for beat and phrase matching, without losing sight of your Beat FX? On the 2 DECK waveform views, the collapsed BEAT FX tab shows the selected effect and its beat value (LENGTH % for REVERB, X-PAD while you play it on the X-PAD). Off: grey, with the name underlined in the effect's X-PAD colour. On: the whole tab lights up in that colour. Tap the tab as usual to open the stock panel.\n\nDisplay only: it reads the mixer's Beat FX report and where you touch, and changes nothing. No hooks, no files, no network. Not tested with Drum Roll or other mods that use the X-PAD.",
   "license": "GPL-3.0-only",
-  "source": "https://github.com/biser/beatfx-tab",
+  "source": "https://github.com/bisser-borisoff/beatfx-tab",
   "api": 1,
   "firmware": [
     "any"
   ],
   "hooks": false,
   "min_core": "1.2.3",
-  "category": "tools"
+  "category": "visual"
 }
