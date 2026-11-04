@@ -31,10 +31,10 @@
 # otherwise exported, which the deck refuses. A C-only build is unchanged by any of this.
 
 MOD_ID          := beatfx-tab
-SRCS            := beatfx-tab.c
+SRCS            := beatfx-tab.c fx_decode.c
 AZ_SDK_INCLUDE  ?= ../az-mods-sdk/include
 AZ_SDK          ?= ../az-mods-sdk
-MAX_REDRAWS     ?= 4          # the most repaints a second your tick asks for
+MAX_REDRAWS     ?= 10         # the most repaints a second your tick asks for
 SAN             ?= plain asan tsan
 TEST_CC         ?= clang
 TEST_CXX        ?= clang++
@@ -106,3 +106,23 @@ test:
 
 clean:
 	rm -rf $(OUT)
+
+# ---- beatfx-tab: unit tests on the computer (clang, ASan + UBSan; test_mod also under TSan) ----
+UNIT_LIBSRCS = $(wildcard fx_decode.c panel_track.c label_draw.c)
+UNIT_TESTS   = $(wildcard tests/test_*.c)
+UNIT_FLAGS   = -g -O1 -Wall -Wextra -Werror -I$(AZ_SDK_INCLUDE) -I.
+UNIT_SAN     = -fsanitize=address,undefined -fno-sanitize-recover=all
+
+.PHONY: unit unit-tsan
+unit:
+	@mkdir -p $(OUT)/unit
+	@set -e; for t in $(UNIT_TESTS); do \
+	    n=$$(basename $$t .c); extra=""; [ "$$n" = test_mod ] && extra=beatfx-tab.c; \
+	    $(TEST_CC) $(UNIT_FLAGS) $(UNIT_SAN) -o $(OUT)/unit/$$n $$t $(UNIT_LIBSRCS) $$extra -lpthread; \
+	    ./$(OUT)/unit/$$n; \
+	done
+
+unit-tsan:
+	@mkdir -p $(OUT)/unit
+	$(TEST_CC) $(UNIT_FLAGS) -fsanitize=thread -o $(OUT)/unit/test_mod_tsan tests/test_mod.c $(UNIT_LIBSRCS) beatfx-tab.c -lpthread
+	TSAN_OPTIONS=halt_on_error=1 ./$(OUT)/unit/test_mod_tsan
