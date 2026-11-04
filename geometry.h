@@ -38,10 +38,11 @@
  * v0.1.1: the grey darkened to the stock tab's look on the deck (white text was hard to read
  * on 0x8d939a). v0.1.7: the group colours matched by eye to the stock panel's X-PAD bar, on
  * the deck, against swatches beside the open panel (b.sr, two rounds); the purple is the
- * closest swatch made a little brighter. v0.1.8: the blue a step deeper than the stock bar's
- * (was 0x00b4f0): ECHO is the most used effect, and a full-size bright cyan was too loud. */
+ * closest swatch made a little brighter. v0.1.9: the blue is AZ-MODS' Phase Meter blue
+ * (PM_BLUE in the core's extras.c), so the two mods match; the stock bar's bright cyan
+ * (0x00b4f0) was too loud as a full-size background on ECHO, the most used effect. */
 #define COL_OFF 0x5d6268
-#define COL_BLUE 0x0096d2
+#define COL_BLUE 0x28a0ff
 #define COL_ORANGE 0xf07828
 #define COL_LIME 0x98d02c /* FLANGER, PHASER, FILTER, TRIPLET FILTER, TRANS */
 #define COL_GREEN 0x3c9820 /* ROLL, TRIPLET ROLL */

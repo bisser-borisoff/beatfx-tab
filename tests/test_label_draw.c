@@ -140,7 +140,7 @@ static void test_sounding_effects_take_their_group_colour(void)
 static void test_groups_take_the_stock_panels_colours(void)
 {
     paint(st(4, 1, -1, "1")); /* HELIX: blue */
-    CHECK(background_is(0x0096d2));
+    CHECK(background_is(0x28a0ff));
     paint(st(5, 1, 50, NULL)); /* REVERB: orange */
     CHECK(background_is(0xf07828));
     paint(st(10, 1, -1, "1")); /* TRANS: lime, like FLANGER, PHASER, FILTER, TRIPLET FILTER */
