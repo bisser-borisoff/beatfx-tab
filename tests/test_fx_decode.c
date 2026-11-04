@@ -100,6 +100,25 @@ static void test_invalid_reports_show_nothing(void)
     CHECK(dec(mk(0x01, 0x60, 0x0e, 1200, 208), 128).valid == 0); /* 0.416 beats: no match */
 }
 
+/* Final review, Important 2: if the deck caps TIME (Pioneer: about 4000 ms), TIME alone would
+ * show a confident wrong beat. The beat index at 0x56 must agree with the matched value. */
+static void test_capped_time_never_shows_a_wrong_beat(void)
+{
+    /* ECHO at 16 beats, 120 BPM, TIME capped at 4000 ms: TIME says 8, the index does not */
+    CHECK(dec(mk(0x01, 0x10, 0x11, 1200, 4000), 128).valid == 0);
+    /* ECHO at 8 beats (index 10), 80 BPM, TIME capped at 4000 ms: TIME says 16/3 */
+    CHECK(dec(mk(0x01, 0x10, 0x10, 800, 4000), 128).valid == 0);
+    /* index and TIME disagree on a plain value: 1 beat by TIME, index of 2 */
+    CHECK(dec(mk(0x01, 0x10, 0x0c, 1200, 500), 128).valid == 0);
+}
+
+static void test_values_without_an_observed_index_still_show(void)
+{
+    /* TRIPLET ROLL 1/6 at 120 BPM: 83 ms, index not yet observed (not one of the known) */
+    fxd_state s = dec(mk(0x01, 0xc0, 0x04, 1200, 83), 128);
+    CHECK(s.valid == 1 && streq(s.beat, "1/6"));
+}
+
 static void test_names_and_groups(void)
 {
     CHECK(streq(fxd_name(9), "TRIPLET FILTER"));
@@ -121,6 +140,8 @@ int main(void)
     test_reverb_shows_length_percent();
     test_on_bit_and_xpad_zone();
     test_invalid_reports_show_nothing();
+    test_capped_time_never_shows_a_wrong_beat();
+    test_values_without_an_observed_index_still_show();
     test_names_and_groups();
     printf("test_fx_decode: %d/%d checks passed\n", g_checks - g_fail, g_checks);
     return g_fail ? 1 : 0;

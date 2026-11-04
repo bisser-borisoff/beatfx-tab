@@ -20,11 +20,13 @@
 #define TAB_Y0 215
 #define TAB_Y1 295
 
-/* A touch here is a tap on the open panel's handle: the panel closes. */
-#define HANDLE_X0 1035
-#define HANDLE_X1 1100
-#define HANDLE_Y0 215
-#define HANDLE_Y1 320
+/* A touch here is a tap on the open panel's handle: the panel closes. Kept tight (about
+ * 20 px around the taps recorded at 1067,266 and 1068,255): a wrong "closed" puts the label
+ * over the open panel, a wrong "open" only shows the stock tab. */
+#define HANDLE_X0 1047
+#define HANDLE_X1 1088
+#define HANDLE_Y0 235
+#define HANDLE_Y1 290
 
 /* Background: grey while the effect is off, the effect's X-PAD colour while it sounds. */
 #define COL_OFF 0x8d939a
