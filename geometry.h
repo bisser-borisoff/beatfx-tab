@@ -37,11 +37,11 @@
 /* Background: grey while the effect is off, the effect's X-PAD colour while it sounds.
  * v0.1.1: the grey darkened to the stock tab's look on the deck (white text was hard to read
  * on 0x8d939a). v0.1.7: the group colours matched by eye to the stock panel's X-PAD bar, on
- * the deck, against swatches beside the open panel (b.sr, two rounds). The blue is a shade
- * less bright than the stock bar, b.sr's pick for a full-size background; the purple is the
- * closest swatch made a little brighter. */
+ * the deck, against swatches beside the open panel (b.sr, two rounds); the purple is the
+ * closest swatch made a little brighter. v0.1.8: the blue a step deeper than the stock bar's
+ * (was 0x00b4f0): ECHO is the most used effect, and a full-size bright cyan was too loud. */
 #define COL_OFF 0x5d6268
-#define COL_BLUE 0x00b4f0
+#define COL_BLUE 0x0096d2
 #define COL_ORANGE 0xf07828
 #define COL_LIME 0x98d02c /* FLANGER, PHASER, FILTER, TRIPLET FILTER, TRANS */
 #define COL_GREEN 0x3c9820 /* ROLL, TRIPLET ROLL */
