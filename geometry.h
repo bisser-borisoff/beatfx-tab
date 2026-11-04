@@ -44,7 +44,11 @@
 #define COL_TEXT_ON 0x111111  /* name and arrow on a colour */
 #define COL_BOX 0xf2f2f2      /* the beat value's box */
 #define COL_BOX_TEXT 0x222222
-#define COL_CORNER 0x000000 /* outside the rounded left corners: the screen's dark ground */
+
+/* While the effect is off, a line in its group's colour under the name (v0.1.2, Бисер's
+ * pick from the mockup: 3 px), UNDERLINE_GAP pixels below the letters. */
+#define UNDERLINE_H 3
+#define UNDERLINE_GAP 3
 
 /* What the mod assumes about the panel when the deck starts (PT_UNKNOWN keeps the label
  * hidden until a tap on the tab or the handle tells). */

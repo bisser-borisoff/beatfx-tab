@@ -43,17 +43,6 @@ static void arrow(const az_core_v1 *C, az_draw *d, az_rect r, uint32_t rgb)
     }
 }
 
-/* Round the two left corners (radius about 4 px): the outside of each corner gets the
- * screen's dark ground. The right edge meets the screen edge and stays square. */
-static void corners(const az_core_v1 *C, az_draw *d, az_rect r)
-{
-    static const int CUT[] = { 2, 1 }; /* pixels cut from the left, row by row from the edge */
-    for (int k = 0; k < (int)(sizeof CUT / sizeof *CUT); k++) {
-        C->fill_rect(d, r.x, r.y + k, CUT[k], 1, COL_CORNER);
-        C->fill_rect(d, r.x, r.y + r.h - 1 - k, CUT[k], 1, COL_CORNER);
-    }
-}
-
 static void text_vcentred(const az_core_v1 *C, az_draw *d, int x, int top, int h, const char *s,
                           int px, uint32_t rgb)
 {
@@ -66,7 +55,6 @@ void label_paint(const az_core_v1 *C, az_draw *d, az_rect r, fxd_state s)
     uint32_t bg = on ? GROUP_COL[fxd_group(s.effect)] : COL_OFF;
     uint32_t ink = on ? COL_TEXT_ON : COL_TEXT_OFF;
     C->fill_rect(d, r.x, r.y, r.w, r.h, bg);
-    corners(C, d, r);
     arrow(C, d, r, ink);
     if (!s.valid) return;
 
@@ -96,5 +84,12 @@ void label_paint(const az_core_v1 *C, az_draw *d, az_rect r, fxd_state s)
         size_t n = strlen(name);
         while (n > 0 && width(C, name, npx) > name_w) name[--n] = '\0';
     }
-    if (name[0]) text_vcentred(C, d, r.x + NAME_X, r.y, r.h, name, npx, ink);
+    if (!name[0]) return;
+    text_vcentred(C, d, r.x + NAME_X, r.y, r.h, name, npx, ink);
+
+    /* Off: underline the name in its group's colour. The capitals centre on the label's
+     * middle and are about 0.72 px tall (measured on the deck), so they end 0.36 px below it. */
+    if (!on)
+        C->fill_rect(d, r.x + NAME_X, r.y + r.h / 2 + npx * 37 / 100 + UNDERLINE_GAP,
+                     width(C, name, npx), UNDERLINE_H, GROUP_COL[fxd_group(s.effect)]);
 }

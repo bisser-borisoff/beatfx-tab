@@ -165,34 +165,92 @@ static void test_invalid_state_draws_only_the_grey_tab_and_arrow(void)
     label_paint(&g_core, NULL, R, (fxd_state){ 0, -1, 0, -1, NULL });
     CHECK(background_is(COL_OFF));
     CHECK(count_text() == 0);
-    for (int i = 0; i < g_n; i++)
-        CHECK(g_rec[i].rgb == COL_OFF || g_rec[i].rgb == COL_TEXT_OFF || g_rec[i].rgb == COL_CORNER);
+    for (int i = 0; i < g_n; i++) CHECK(g_rec[i].rgb == COL_OFF || g_rec[i].rgb == COL_TEXT_OFF);
     CHECK(g_n > 1); /* the arrow */
     CHECK(all_inside());
 }
 
-/* The left corners are rounded (radius about 4 px) by painting their outside in the screen's
- * dark ground; the right edge stays square against the screen edge, like the stock tab. */
-static int has_corner_rect(int x, int y, int w)
+/* v0.1.2: the corners are square. The rounded ones (v0.1.1) were cut in black, which showed
+ * as a dead pixel wherever a light part of the waveform ran under the label (Бисер, deck). */
+static int painted_over(int x, int y)
 {
-    for (int i = 0; i < g_n; i++) {
+    for (int i = 1; i < g_n; i++) { /* g_rec[0] is the background */
         const rec_t *q = &g_rec[i];
-        if (!q->text && q->rgb == COL_CORNER && q->x == x && q->y == y && q->w == w && q->h == 1)
-            return 1;
+        if (!q->text && x >= q->x && x < q->x + q->w && y >= q->y && y < q->y + q->h) return 1;
     }
     return 0;
 }
 
-static void test_left_corners_are_rounded_right_ones_square(void)
+static void test_corners_are_square(void)
 {
-    paint(st(1, 1, -1, "3/4"));
-    CHECK(has_corner_rect(R.x, R.y, 2));
-    CHECK(has_corner_rect(R.x, R.y + 1, 1));
-    CHECK(has_corner_rect(R.x, R.y + R.h - 1, 2));
-    CHECK(has_corner_rect(R.x, R.y + R.h - 2, 1));
-    for (int i = 0; i < g_n; i++)
-        if (!g_rec[i].text && g_rec[i].rgb == COL_CORNER) CHECK(g_rec[i].x + g_rec[i].w <= R.x + 2);
+    const fxd_state cases[] = { st(1, 1, -1, "3/4"), st(1, 0, -1, "3/4"),
+                                (fxd_state){ 0, -1, 0, -1, NULL } };
+    for (int c = 0; c < 3; c++) {
+        paint(cases[c]);
+        CHECK(!painted_over(R.x, R.y));
+        CHECK(!painted_over(R.x + 1, R.y + 1));
+        CHECK(!painted_over(R.x, R.y + R.h - 1));
+        CHECK(!painted_over(R.x + 1, R.y + R.h - 2));
+        CHECK(!painted_over(R.x + R.w - 1, R.y));
+        CHECK(!painted_over(R.x + R.w - 1, R.y + R.h - 1));
+    }
+}
+
+/* v0.1.2: while the effect is off, the name is underlined in its group's X-PAD colour, a
+ * UNDERLINE_H (4 px) line as wide as the drawn name, just below the letters. */
+static const rec_t *underline(uint32_t rgb)
+{
+    for (int i = 1; i < g_n; i++)
+        if (!g_rec[i].text && g_rec[i].rgb == rgb) return &g_rec[i];
+    return NULL;
+}
+
+static void check_underlined(const char *name, uint32_t rgb)
+{
+    const rec_t *n = find_text(name), *u = underline(rgb), *box = find_fill(COL_BOX);
+    CHECK(n != NULL && u != NULL && box != NULL);
+    if (!n || !u || !box) return;
+    CHECK(u->h == UNDERLINE_H);
+    CHECK(u->x == n->x && u->w == n->w);
+    CHECK(u->y >= n->y + n->h / 2 + n->px / 3); /* below the letters, which centre in n's box */
+    CHECK(u->y <= n->y + n->h / 2 + n->px / 2 + UNDERLINE_GAP + 1); /* and close under them */
+    CHECK(u->x + u->w <= box->x);
     CHECK(all_inside());
+}
+
+static void test_off_effect_name_is_underlined_in_its_group_colour(void)
+{
+    paint(st(0, 0, -1, "1/2"));
+    CHECK(background_is(COL_OFF));
+    check_underlined("DELAY", COL_BLUE);
+    paint(st(5, 0, 40, NULL));
+    check_underlined("REVERB", COL_ORANGE);
+    paint(st(6, 0, -1, "1"));
+    check_underlined("FLANGER", COL_YELLOW);
+    paint(st(11, 0, -1, "1/4"));
+    check_underlined("ROLL", COL_GREEN);
+    paint(st(13, 0, -1, "2"));
+    check_underlined("MOBIUS", COL_PURPLE);
+}
+
+static void test_underline_follows_a_shrunk_name(void)
+{
+    paint(st(9, 0, -1, "4/3"));
+    const rec_t *n = find_text("TRIPLET FILTER");
+    if (!n) n = find_text("TRI FILTER");
+    CHECK(n != NULL);
+    if (n) check_underlined(n->s, COL_YELLOW);
+}
+
+static void test_on_effect_has_no_underline(void)
+{
+    const int fx[] = { 0, 5, 6, 11, 13 };
+    const uint32_t col[] = { COL_BLUE, COL_ORANGE, COL_YELLOW, COL_GREEN, COL_PURPLE };
+    for (int i = 0; i < 5; i++) {
+        paint(st(fx[i], 1, 40, fx[i] == 5 ? NULL : "1"));
+        CHECK(background_is(col[i]));
+        CHECK(underline(col[i]) == NULL);
+    }
 }
 
 int main(void)
@@ -208,7 +266,10 @@ int main(void)
     test_longest_name_fits_before_the_box();
     test_widest_beat_fits_in_the_box();
     test_invalid_state_draws_only_the_grey_tab_and_arrow();
-    test_left_corners_are_rounded_right_ones_square();
+    test_corners_are_square();
+    test_off_effect_name_is_underlined_in_its_group_colour();
+    test_underline_follows_a_shrunk_name();
+    test_on_effect_has_no_underline();
     printf("test_label_draw: %d/%d checks passed\n", g_checks - g_fail, g_checks);
     return g_fail ? 1 : 0;
 }
