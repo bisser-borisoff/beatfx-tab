@@ -2,7 +2,7 @@
   "azmod": 1,
   "id": "beatfx-tab",
   "name": "Beat FX Tab",
-  "version": "0.1.9",
+  "version": "1.0.0",
   "author": "b.sr",
   "summary": "Keep the Beat FX panel closed and still see it all: effect, beat value and on/off, right on the collapsed tab.",
   "description": "Want your screen space back for beat and phrase matching, without losing sight of your Beat FX? On the 2 DECK waveform views, the collapsed BEAT FX tab shows the selected effect and its beat value (REVERB: LENGTH %; X-PAD while played on the pad). Off: grey, the name underlined in the effect's associated color. On: lit in that color. Tap it as usual to open the stock panel.\n\nDisplay only: it reads the Beat FX report and touches and changes nothing. No hooks, files or network. Works with AZ-MODS' Drum Roll. Known issue: it stays on top of TRACK INFO (the i button).",
