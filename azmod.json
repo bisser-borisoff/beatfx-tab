@@ -1,0 +1,18 @@
+{
+  "azmod": 1,
+  "id": "beatfx-tab",
+  "name": "Beat FX Tab",
+  "version": "0.1.0",
+  "author": "biser",
+  "summary": "Describe in one line what your mod does.",
+  "description": "Describe what your mod changes on the deck, and anything it does that a DJ would want to know before installing it.",
+  "license": "GPL-3.0-only",
+  "source": "https://github.com/biser/beatfx-tab",
+  "api": 1,
+  "firmware": [
+    "any"
+  ],
+  "hooks": false,
+  "min_core": "1.2.3",
+  "category": "tools"
+}
