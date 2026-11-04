@@ -44,12 +44,16 @@ static int index_agrees(size_t i, unsigned m56)
 
 #define SNAP_TOLERANCE 1.06 /* beats from TIME x BPM may be this far off a known value */
 #define PACK_PRESENT (1ull << 63)
+#define PACK_FINGER (1ull << 56)
 
 uint64_t fxd_pack(const unsigned char *f, int len)
 {
     if (!f || len < FXD_MIN_LEN) return 0;
-    return PACK_PRESENT | (uint64_t)f[0x54] | (uint64_t)f[0x55] << 8 | (uint64_t)f[0x56] << 16 |
-           (uint64_t)(f[0x58] | f[0x59] << 8) << 24 | (uint64_t)(f[0x5a] | f[0x5b] << 8) << 40;
+    /* a finger on the X-PAD: 0x1c is 1 and 0x1d holds its position (0xff with no finger) */
+    uint64_t finger = f[0x1c] == 0x01 && f[0x1d] != 0xff ? PACK_FINGER : 0;
+    return PACK_PRESENT | finger | (uint64_t)f[0x54] | (uint64_t)f[0x55] << 8 |
+           (uint64_t)f[0x56] << 16 | (uint64_t)(f[0x58] | f[0x59] << 8) << 24 |
+           (uint64_t)(f[0x5a] | f[0x5b] << 8) << 40;
 }
 
 /* The index in FRAC of the value nearest to beats, or -1 when none is within tolerance. */
@@ -69,7 +73,7 @@ static int snap_beats(double beats)
 
 fxd_state fxd_decode(uint64_t p)
 {
-    fxd_state s = { 0, -1, 0, -1, NULL };
+    fxd_state s = { 0, -1, 0, -1, NULL, 0 };
     if (!(p & PACK_PRESENT)) return s;
     unsigned m54 = (unsigned)(p & 0xff), m55 = (unsigned)(p >> 8 & 0xff), m56 = (unsigned)(p >> 16 & 0xff);
     unsigned bpm10 = (unsigned)(p >> 24 & 0xffff), val = (unsigned)(p >> 40 & 0xffff);
@@ -88,6 +92,7 @@ fxd_state fxd_decode(uint64_t p)
     s.valid = 1;
     s.effect = effect;
     s.on = (m54 & 0x80) != 0;
+    s.xpad = s.on && (p & PACK_FINGER) != 0;
     return s;
 }
 

@@ -7,6 +7,7 @@
  *   0x56           beat index (REVERB: LENGTH %)
  *   0x58..0x59     BPM x 10, little endian
  *   0x5a..0x5b     TIME in ms (REVERB: LENGTH %), little endian
+ *   0x1c, 0x1d     a finger on the X-PAD: 0x1c = 1 and 0x1d = its position (0xff without one)
  *
  * fxd_pack copies one frame's report into a single word, so a reader on another thread
  * never sees a new effect with the old time. fxd_decode turns it into what the label shows;
@@ -28,6 +29,7 @@ typedef struct {
     int on;           /* 1 = effect sounding (ON/OFF or X-PAD held) */
     int percent;      /* REVERB: LENGTH %, else -1 */
     const char *beat; /* static "3/4" etc.; NULL for REVERB or invalid */
+    int xpad;         /* 1 = sounding through a finger on the X-PAD (not the ON button) */
 } fxd_state;
 
 uint64_t fxd_pack(const unsigned char *frame, int len); /* 0 = no usable data */

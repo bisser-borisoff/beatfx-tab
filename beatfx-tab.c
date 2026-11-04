@@ -81,7 +81,7 @@ static long now_ms(void)
 static int same_look(fxd_state a, fxd_state b)
 {
     return a.valid == b.valid && a.effect == b.effect && a.on == b.on && a.percent == b.percent &&
-           a.beat == b.beat;
+           a.beat == b.beat && a.xpad == b.xpad;
 }
 
 static int s_visible;

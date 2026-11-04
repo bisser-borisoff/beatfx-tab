@@ -65,6 +65,8 @@ static int f_tw(const char *s, int px) { return (int)strlen(s) * px * 3 / 5; }
 static const az_mod_v1 *M;
 static unsigned char g_frame[128];
 
+static int g_xpad;
+
 static void frame(int m54, int m55, int m56, int bpm10, int val)
 {
     memset(g_frame, 0, sizeof g_frame);
@@ -75,6 +77,8 @@ static void frame(int m54, int m55, int m56, int bpm10, int val)
     g_frame[0x59] = (unsigned char)(bpm10 >> 8);
     g_frame[0x5a] = (unsigned char)(val & 0xff);
     g_frame[0x5b] = (unsigned char)(val >> 8);
+    g_frame[0x1c] = g_xpad ? 0x01 : 0x00; /* a finger on the X-PAD, and its position */
+    g_frame[0x1d] = g_xpad ? 0x05 : 0xff;
     unsigned char copy[128];
     memcpy(copy, g_frame, sizeof copy);
     int r = g_ffn(AZ_BUS_MIXER_IN, g_frame, (int)sizeof g_frame, NULL);
@@ -174,6 +178,17 @@ int main(void)
     frame(0x81, 0x10, 0x0a, 1200, 500);
     settle();
     CHECK(g_redraws == 3);
+
+    /* 7b: a finger on the X-PAD while it sounds changes the look (the box says X-PAD), and
+     * lifting it changes it back */
+    g_xpad = 1;
+    frame(0x81, 0x11, 0x0a, 1200, 500);
+    settle();
+    CHECK(g_redraws == 4);
+    g_xpad = 0;
+    frame(0x81, 0x10, 0x0a, 1200, 500);
+    settle();
+    CHECK(g_redraws == 5);
 
     /* 8: the tab opens the panel */
     touch(1250, 268);

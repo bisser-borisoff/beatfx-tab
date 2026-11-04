@@ -88,6 +88,39 @@ static void test_on_bit_and_xpad_zone(void)
     CHECK(x.valid == 1 && x.effect == 1 && x.on == 1 && streq(x.beat, "1"));
 }
 
+/* v0.1.4: a finger on the X-PAD sets 0x1c to 1 and 0x1d to its position (0xff with no finger),
+ * in the same frame that turns the effect on (capture 2026-11-04: ECHO zones 1-6, REVERB,
+ * FLANGER). The ON button leaves both as they are. Only both together count. */
+static const unsigned char *finger(const unsigned char *f, int m1c, int m1d)
+{
+    g_frame[0x1c] = (unsigned char)m1c;
+    g_frame[0x1d] = (unsigned char)m1d;
+    return f;
+}
+
+static void test_xpad_finger_is_told_from_the_on_button(void)
+{
+    fxd_state s = dec(finger(mk(0x81, 0x11, 0x0a, 1200, 500), 0x01, 0x05), 128);
+    CHECK(s.valid && s.on && s.xpad && s.effect == 1 && streq(s.beat, "1"));
+
+    s = dec(finger(mk(0x81, 0x10, 0x0a, 1200, 500), 0x00, 0xff), 128); /* ON button */
+    CHECK(s.valid && s.on && !s.xpad);
+
+    s = dec(finger(mk(0x81, 0x56, 40, 1200, 40), 0x01, 0x00), 128); /* REVERB, position 0 */
+    CHECK(s.valid && s.on && s.xpad && s.percent == 40);
+
+    /* the two bytes disagree: not sure, so not the X-PAD */
+    CHECK(!dec(finger(mk(0x81, 0x11, 0x0a, 1200, 500), 0x01, 0xff), 128).xpad);
+    CHECK(!dec(finger(mk(0x81, 0x11, 0x0a, 1200, 500), 0x00, 0x05), 128).xpad);
+    CHECK(!dec(finger(mk(0x81, 0x11, 0x0a, 1200, 500), 0x02, 0x05), 128).xpad);
+
+    /* a finger with the effect silent (never seen): not shown as the X-PAD */
+    s = dec(finger(mk(0x01, 0x11, 0x0a, 1200, 500), 0x01, 0x05), 128);
+    CHECK(s.valid && !s.on && !s.xpad);
+
+    CHECK(fxd_decode(0).xpad == 0);
+}
+
 static void test_invalid_reports_show_nothing(void)
 {
     CHECK(fxd_pack(mk(0x01, 0x10, 0x09, 1280, 351), 0x5b) == 0); /* too short */
@@ -139,6 +172,7 @@ int main(void)
     test_echo_three_quarters_at_128();
     test_reverb_shows_length_percent();
     test_on_bit_and_xpad_zone();
+    test_xpad_finger_is_told_from_the_on_button();
     test_invalid_reports_show_nothing();
     test_capped_time_never_shows_a_wrong_beat();
     test_values_without_an_observed_index_still_show();

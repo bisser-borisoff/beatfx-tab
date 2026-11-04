@@ -2,7 +2,7 @@
   "azmod": 1,
   "id": "beatfx-tab",
   "name": "Beat FX Tab",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "author": "biser",
   "summary": "The collapsed BEAT FX tab shows the selected effect and its beat value.",
   "description": "Turns the small BEAT FX tab on the right of the 2 DECK waveform screen into a display: the selected effect and its beat value (or LENGTH % for REVERB), grey while the effect is off and in the effect's X-PAD colour while it sounds. It hides while the Beat FX panel is open. It only reads the mixer's Beat FX report and touch positions; it never changes an effect, a frame or a touch.",

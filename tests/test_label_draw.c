@@ -55,7 +55,7 @@ static void paint(fxd_state s)
 
 static fxd_state st(int effect, int on, int percent, const char *beat)
 {
-    return (fxd_state){ 1, effect, on, percent, beat };
+    return (fxd_state){ 1, effect, on, percent, beat, 0 };
 }
 
 static const rec_t *find_text(const char *s)
@@ -162,7 +162,7 @@ static void test_widest_beat_fits_in_the_box(void)
 static void test_invalid_state_draws_only_the_grey_tab_and_arrow(void)
 {
     g_n = 0;
-    label_paint(&g_core, NULL, R, (fxd_state){ 0, -1, 0, -1, NULL });
+    label_paint(&g_core, NULL, R, (fxd_state){ 0, -1, 0, -1, NULL, 0 });
     CHECK(background_is(COL_OFF));
     CHECK(count_text() == 0);
     for (int i = 0; i < g_n; i++) CHECK(g_rec[i].rgb == COL_OFF || g_rec[i].rgb == COL_TEXT_OFF);
@@ -184,7 +184,7 @@ static int painted_over(int x, int y)
 static void test_corners_are_square(void)
 {
     const fxd_state cases[] = { st(1, 1, -1, "3/4"), st(1, 0, -1, "3/4"),
-                                (fxd_state){ 0, -1, 0, -1, NULL } };
+                                (fxd_state){ 0, -1, 0, -1, NULL, 0 } };
     for (int c = 0; c < 3; c++) {
         paint(cases[c]);
         CHECK(!painted_over(R.x, R.y));
@@ -272,7 +272,7 @@ static int arrow_extent(uint32_t ink, int *x0, int *x1)
 static void test_arrow_and_box_sit_in_the_stock_tab_zone(void)
 {
     const fxd_state cases[] = { st(1, 0, -1, "3/4"), st(1, 1, -1, "3/4"),
-                                (fxd_state){ 0, -1, 0, -1, NULL } };
+                                (fxd_state){ 0, -1, 0, -1, NULL, 0 } };
     const uint32_t ink[] = { COL_TEXT_OFF, COL_TEXT_ON, COL_TEXT_OFF };
     for (int c = 0; c < 3; c++) {
         paint(cases[c]);
@@ -311,6 +311,32 @@ static void test_names_stay_left_of_the_stock_tab_zone(void)
     }
 }
 
+/* v0.1.4: while a finger is on the X-PAD, the box says "X-PAD" (Бисер's pick from a mockup),
+ * since the beat that sounds is then the pad's, not the BEAT value. */
+static void test_xpad_shows_in_the_box(void)
+{
+    fxd_state s = st(1, 1, -1, "1");
+    s.xpad = 1;
+    paint(s);
+    CHECK(background_is(COL_BLUE));
+    const rec_t *v = find_text("X-PAD"), *box = find_fill(COL_BOX);
+    CHECK(v && box && v->x >= box->x && v->x + v->w <= box->x + box->w);
+    CHECK(v && v->rgb == COL_BOX_TEXT && v->px >= 12);
+    CHECK(find_text("1") == NULL);
+    CHECK(find_text("ECHO") != NULL);
+    CHECK(all_inside());
+
+    s = st(5, 1, 40, NULL);
+    s.xpad = 1;
+    paint(s);
+    CHECK(find_text("X-PAD") != NULL && find_text("40%") == NULL);
+
+    s = st(1, 0, -1, "1"); /* silent: the BEAT value, whatever the flag says */
+    s.xpad = 1;
+    paint(s);
+    CHECK(find_text("1") != NULL && find_text("X-PAD") == NULL);
+}
+
 int main(void)
 {
     g_core.abi = AZ_MOD_ABI;
@@ -330,6 +356,7 @@ int main(void)
     test_on_effect_has_no_underline();
     test_arrow_and_box_sit_in_the_stock_tab_zone();
     test_names_stay_left_of_the_stock_tab_zone();
+    test_xpad_shows_in_the_box();
     printf("test_label_draw: %d/%d checks passed\n", g_checks - g_fail, g_checks);
     return g_fail ? 1 : 0;
 }

@@ -61,7 +61,8 @@ void label_paint(const az_core_v1 *C, az_draw *d, az_rect r, fxd_state s)
     /* The value, in a light box on the right. */
     az_rect box = { TAB_X0 + ZONE_MARGIN, r.y + BOX_VPAD, BOX_W, r.h - 2 * BOX_VPAD };
     char value[8];
-    if (s.beat) snprintf(value, sizeof value, "%s", s.beat);
+    if (on && s.xpad) snprintf(value, sizeof value, "X-PAD"); /* the pad's beat sounds, not BEAT's */
+    else if (s.beat) snprintf(value, sizeof value, "%s", s.beat);
     else snprintf(value, sizeof value, "%d%%", s.percent);
     C->fill_rect(d, box.x, box.y, box.w, box.h, COL_BOX);
     int vpx = fit_px(C, value, BEAT_PX_MAX, box.w - 4);
