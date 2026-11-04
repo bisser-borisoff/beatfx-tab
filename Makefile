@@ -31,7 +31,7 @@
 # otherwise exported, which the deck refuses. A C-only build is unchanged by any of this.
 
 MOD_ID          := beatfx-tab
-SRCS            := beatfx-tab.c fx_decode.c panel_track.c
+SRCS            := beatfx-tab.c fx_decode.c panel_track.c label_draw.c
 AZ_SDK_INCLUDE  ?= ../az-mods-sdk/include
 AZ_SDK          ?= ../az-mods-sdk
 MAX_REDRAWS     ?= 10         # the most repaints a second your tick asks for
