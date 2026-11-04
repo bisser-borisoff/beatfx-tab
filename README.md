@@ -46,11 +46,25 @@ label steps aside while the panel is open and comes back when you close it.
 
 ## Tested
 
-- XDJ-AZ firmware 2.01 with AZ-MODS 1.2.7.
+- XDJ-AZ firmware 2.01 with AZ-MODS 1.2.7 and 1.2.8.
 - Together with AZ-MODS' Phase Meter, 60 FPS Waveforms, 60 FPS UI and Stems.
 - **Not tested** with AZ-MODS' Drum Roll, or with community mods that use the X-PAD or the Beat
   FX section. If you use one, try it at home before a gig, and tell us what you see in an issue or
   on Discord. Reports and pull requests are welcome.
+
+## Known issue
+
+**The label stays on top of TRACK INFO.** TRACK INFO (the **i** at the top right of the
+WAVEFORM screen) opens over the waveforms, and the label keeps showing on top of it. Close
+TRACK INFO and everything is as before.
+
+Why: a mod learns which screen is showing from AZ-MODS, and AZ-MODS reports the deck screen
+while TRACK INFO is open. Knowing that the panel is up takes reading the deck software's own
+screen objects, which is how AZ-MODS' Phase Meter steps aside. Beat FX Tab only uses the
+services AZ-MODS offers and never reads the deck software's memory, so it stays this way until
+AZ-MODS reports TRACK INFO itself. Guessing it from where you tap was left out on purpose: the
+same button opens and closes it, and a guess that falls out of step would hide the label on the
+waveforms instead.
 
 ## Install
 
