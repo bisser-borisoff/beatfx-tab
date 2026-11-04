@@ -3,5 +3,32 @@
   "name": "Beat FX Tab",
   "maintainer": "b.sr",
   "homepage": "https://github.com/bisser-borisoff/beatfx-tab",
-  "mods": []
+  "mods": [
+    {
+      "id": "beatfx-tab",
+      "name": "Beat FX Tab",
+      "version": "1.0.0",
+      "author": "b.sr",
+      "summary": "Keep the Beat FX panel closed and still see it all: effect, beat value and on/off, right on the collapsed tab.",
+      "icon": "https://github.com/bisser-borisoff/beatfx-tab/releases/download/beatfx-tab-1.0.0/beatfx-tab-1.0.0-icon.png",
+      "package": "https://github.com/bisser-borisoff/beatfx-tab/releases/download/beatfx-tab-1.0.0/beatfx-tab-1.0.0.azmod",
+      "sha256": "2adb6a82bd17442f0186d88cb6c6bfd3c2c6afa1ea88ad834c86659239e88703",
+      "size": 1720505,
+      "firmware": [
+        "any"
+      ],
+      "hooks": false,
+      "source": "https://github.com/bisser-borisoff/beatfx-tab",
+      "updated": "2026-11-04",
+      "category": "visual",
+      "license": "GPL-3.0-only",
+      "min_core": "1.2.3",
+      "description": "Want your screen space back for beat and phrase matching, without losing sight of your Beat FX? On the 2 DECK waveform views, the collapsed BEAT FX tab shows the selected effect and its beat value (REVERB: LENGTH %; X-PAD while played on the pad). Off: grey, the name underlined in the effect's associated color. On: lit in that color. Tap it as usual to open the stock panel.\n\nDisplay only: it reads the Beat FX report and touches and changes nothing. No hooks, files or network. Works with AZ-MODS' Drum Roll. Known issue: it stays on top of TRACK INFO (the i button).",
+      "screenshots": [
+        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/beatfx-tab-1.0.0/beatfx-tab-1.0.0-shot1.png",
+        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/beatfx-tab-1.0.0/beatfx-tab-1.0.0-shot2.png",
+        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/beatfx-tab-1.0.0/beatfx-tab-1.0.0-shot3.png"
+      ]
+    }
+  ]
 }
