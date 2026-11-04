@@ -165,8 +165,33 @@ static void test_invalid_state_draws_only_the_grey_tab_and_arrow(void)
     label_paint(&g_core, NULL, R, (fxd_state){ 0, -1, 0, -1, NULL });
     CHECK(background_is(COL_OFF));
     CHECK(count_text() == 0);
-    for (int i = 0; i < g_n; i++) CHECK(g_rec[i].rgb == COL_OFF || g_rec[i].rgb == COL_TEXT_OFF);
+    for (int i = 0; i < g_n; i++)
+        CHECK(g_rec[i].rgb == COL_OFF || g_rec[i].rgb == COL_TEXT_OFF || g_rec[i].rgb == COL_CORNER);
     CHECK(g_n > 1); /* the arrow */
+    CHECK(all_inside());
+}
+
+/* The left corners are rounded (radius about 4 px) by painting their outside in the screen's
+ * dark ground; the right edge stays square against the screen edge, like the stock tab. */
+static int has_corner_rect(int x, int y, int w)
+{
+    for (int i = 0; i < g_n; i++) {
+        const rec_t *q = &g_rec[i];
+        if (!q->text && q->rgb == COL_CORNER && q->x == x && q->y == y && q->w == w && q->h == 1)
+            return 1;
+    }
+    return 0;
+}
+
+static void test_left_corners_are_rounded_right_ones_square(void)
+{
+    paint(st(1, 1, -1, "3/4"));
+    CHECK(has_corner_rect(R.x, R.y, 2));
+    CHECK(has_corner_rect(R.x, R.y + 1, 1));
+    CHECK(has_corner_rect(R.x, R.y + R.h - 1, 2));
+    CHECK(has_corner_rect(R.x, R.y + R.h - 2, 1));
+    for (int i = 0; i < g_n; i++)
+        if (!g_rec[i].text && g_rec[i].rgb == COL_CORNER) CHECK(g_rec[i].x + g_rec[i].w <= R.x + 2);
     CHECK(all_inside());
 }
 
@@ -183,6 +208,7 @@ int main(void)
     test_longest_name_fits_before_the_box();
     test_widest_beat_fits_in_the_box();
     test_invalid_state_draws_only_the_grey_tab_and_arrow();
+    test_left_corners_are_rounded_right_ones_square();
     printf("test_label_draw: %d/%d checks passed\n", g_checks - g_fail, g_checks);
     return g_fail ? 1 : 0;
 }

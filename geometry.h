@@ -9,14 +9,16 @@
 
 #include "panel_track.h"
 
-/* The mod's label, right-aligned over the stock tab and extended to the left. */
+/* The mod's label, right-aligned and opaque. It covers the stock tab, which photos on the
+ * deck (2026-11-04, v0.1.0) put at about x 1197-1280, y 237-282, with a few pixels to spare. */
 #define LABEL_X 1130
-#define LABEL_Y 225
+#define LABEL_Y 233
 #define LABEL_W 150
-#define LABEL_H 45
+#define LABEL_H 52
 
-/* A touch here (to the right edge) is a tap on the stock tab: the panel opens. */
-#define TAB_X0 1180
+/* A touch here (to the right edge) opens the panel: on the deck a tap anywhere on the label
+ * does. */
+#define TAB_X0 LABEL_X
 #define TAB_Y0 215
 #define TAB_Y1 295
 
@@ -28,9 +30,11 @@
 #define HANDLE_Y0 235
 #define HANDLE_Y1 290
 
-/* Background: grey while the effect is off, the effect's X-PAD colour while it sounds. */
-#define COL_OFF 0x8d939a
-#define COL_BLUE 0x5ec4e8
+/* Background: grey while the effect is off, the effect's X-PAD colour while it sounds.
+ * v0.1.1: the grey darkened to the stock tab's look on the deck (white text was hard to read
+ * on 0x8d939a), the blue darkened at Бисер's request (was 0x5ec4e8). */
+#define COL_OFF 0x5d6268
+#define COL_BLUE 0x3a96dc
 #define COL_ORANGE 0xf0a42c
 #define COL_YELLOW 0xd4e04a
 #define COL_GREEN 0x86cc3a
@@ -40,6 +44,7 @@
 #define COL_TEXT_ON 0x111111  /* name and arrow on a colour */
 #define COL_BOX 0xf2f2f2      /* the beat value's box */
 #define COL_BOX_TEXT 0x222222
+#define COL_CORNER 0x000000 /* outside the rounded left corners: the screen's dark ground */
 
 /* What the mod assumes about the panel when the deck starts (PT_UNKNOWN keeps the label
  * hidden until a tap on the tab or the handle tells). */

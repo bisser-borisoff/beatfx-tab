@@ -49,7 +49,8 @@ static az_surface *f_screate(const char *id, const az_surface_v1 *s)
 static void f_splace(az_surface *s, az_rect r)
 {
     (void)s;
-    g_placed_ok = r.x == 1130 && r.y == 225 && r.w == 150 && r.h == 45;
+    /* calibrated on the deck (photos 2026-11-04): covers the stock tab, about x 1197-1280, y 237-282 */
+    g_placed_ok = r.x == 1130 && r.y == 233 && r.w == 150 && r.h == 52;
 }
 static void f_sshow(az_surface *s, int on) { (void)s; g_shown = on; }
 static void f_sredraw(az_surface *s) { (void)s; g_redraws++; }
