@@ -47,10 +47,12 @@ label steps aside while the panel is open and comes back when you close it.
 ## Tested
 
 - XDJ-AZ firmware 2.01 with AZ-MODS 1.2.7 and 1.2.8.
-- Together with AZ-MODS' Phase Meter, 60 FPS Waveforms, 60 FPS UI and Stems.
-- **Not tested** with AZ-MODS' Drum Roll, or with community mods that use the X-PAD or the Beat
-  FX section. If you use one, try it at home before a gig, and tell us what you see in an issue or
-  on Discord. Reports and pull requests are welcome.
+- Together with AZ-MODS' Phase Meter, 60 FPS Waveforms, 60 FPS UI, Stems and Drum Roll. A
+  Drum Roll played on the X-PAD also sounds the selected Beat FX, so the tab lights up and shows
+  **X-PAD** while you roll.
+- **Not tested** with community mods that use the X-PAD or the Beat FX section. If you use one,
+  try it at home before a gig, and tell us what you see in an issue or on Discord. Reports and
+  pull requests are welcome.
 
 ## Known issue
 
