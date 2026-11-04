@@ -13,10 +13,10 @@ shows only an arrow. Beat FX Tab turns that collapsed tab into a live display:
 - the selected effect, as on the knob: DELAY, ECHO, PING PONG, SPIRAL, REVERB, ...
 - its beat value in a white box: 1/16 to 64 beats, LENGTH % for REVERB
 - **X-PAD** in the box while your finger plays the effect on the X-PAD
-- **off:** grey, with the name underlined in the effect group's X-PAD colour
-- **on:** the whole tab in that colour
+- **off:** grey, with the name underlined in the effect group's color
+- **on:** the whole tab in that color
 
-| Colour | Effects |
+| Color | Effects |
 |---|---|
 | blue | DELAY, ECHO, PING PONG, SPIRAL, HELIX |
 | orange | REVERB |
@@ -93,7 +93,7 @@ same tag with the same SDK commit (`SDK_REF` in `.github/workflows/release.yml`)
 | `fx_decode.c` | the mixer's Beat FX report: which bytes mean what |
 | `panel_track.c` | follows the stock panel (open or closed) from the taps |
 | `label_draw.c` | paints the label |
-| `geometry.h` | every position and colour, calibrated on the deck |
+| `geometry.h` | every position and color, calibrated on the deck |
 
 ## License
 
