@@ -253,6 +253,64 @@ static void test_on_effect_has_no_underline(void)
     }
 }
 
+/* v0.1.3: only the stock tab's zone (TAB_X0 on) opens the panel, so the arrow and the value
+ * box sit inside it and the name left of it, ZONE_MARGIN pixels clear of its edge either side
+ * (the edge is measured from photos). The arrow moves to the label's right end. */
+static int arrow_extent(uint32_t ink, int *x0, int *x1)
+{
+    int found = 0;
+    for (int i = 1; i < g_n; i++) {
+        const rec_t *q = &g_rec[i];
+        if (q->text || q->rgb != ink || q->h != 1) continue;
+        if (!found || q->x < *x0) *x0 = q->x;
+        if (!found || q->x + q->w > *x1) *x1 = q->x + q->w;
+        found = 1;
+    }
+    return found;
+}
+
+static void test_arrow_and_box_sit_in_the_stock_tab_zone(void)
+{
+    const fxd_state cases[] = { st(1, 0, -1, "3/4"), st(1, 1, -1, "3/4"),
+                                (fxd_state){ 0, -1, 0, -1, NULL } };
+    const uint32_t ink[] = { COL_TEXT_OFF, COL_TEXT_ON, COL_TEXT_OFF };
+    for (int c = 0; c < 3; c++) {
+        paint(cases[c]);
+        int x0 = 0, x1 = 0;
+        CHECK(arrow_extent(ink[c], &x0, &x1));
+        CHECK(x0 >= TAB_X0 + ZONE_MARGIN);
+        CHECK(x1 <= R.x + R.w - 6);
+        const rec_t *box = find_fill(COL_BOX);
+        if (c < 2) {
+            CHECK(box && box->x >= TAB_X0 + ZONE_MARGIN && box->x + box->w <= x0);
+        } else {
+            CHECK(box == NULL);
+        }
+        CHECK(all_inside());
+    }
+}
+
+static void test_names_stay_left_of_the_stock_tab_zone(void)
+{
+    for (int e = 0; e < 14; e++) {
+        for (int on = 0; on < 2; on++) {
+            paint(e == 5 ? st(e, on, 100, NULL) : st(e, on, -1, "16/3"));
+            const rec_t *box = find_fill(COL_BOX);
+            int names = 0;
+            for (int i = 0; i < g_n; i++) {
+                const rec_t *q = &g_rec[i];
+                if (!q->text || !box || q->x >= box->x) continue;
+                names++;
+                CHECK(q->x >= R.x + 4);
+                CHECK(q->x + q->w <= TAB_X0 - ZONE_MARGIN);
+                CHECK(q->px >= 12 && strlen(q->s) >= 4);
+            }
+            CHECK(names == 1);
+            CHECK(all_inside());
+        }
+    }
+}
+
 int main(void)
 {
     g_core.abi = AZ_MOD_ABI;
@@ -270,6 +328,8 @@ int main(void)
     test_off_effect_name_is_underlined_in_its_group_colour();
     test_underline_follows_a_shrunk_name();
     test_on_effect_has_no_underline();
+    test_arrow_and_box_sit_in_the_stock_tab_zone();
+    test_names_stay_left_of_the_stock_tab_zone();
     printf("test_label_draw: %d/%d checks passed\n", g_checks - g_fail, g_checks);
     return g_fail ? 1 : 0;
 }

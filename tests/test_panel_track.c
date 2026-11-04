@@ -30,15 +30,18 @@ static void test_assignment_is_absolute(void)
     CHECK(pt_on_touch(PT_CLOSED, 1067, 266) == PT_CLOSED);
 }
 
-/* On the deck a tap anywhere on the mod's label opens the panel (Бисер, 2026-11-04), so the
- * whole label counts as the tab. Where it would not open, a wrong "open" only shows the
- * stock tab. */
-static void test_whole_label_opens(void)
+/* On the deck only the stock tab's own zone (about x 1197 on) opens the panel: a tap on the
+ * name further left did not, yet v0.1.2 counted it and hid the label (Бисер, 2026-11-04). A tap
+ * in the grey just left of the value box did open it. */
+static void test_only_the_stock_tab_zone_opens(void)
 {
-    CHECK(pt_on_touch(PT_CLOSED, 1150, 250) == PT_OPEN);
-    CHECK(pt_on_touch(PT_UNKNOWN, 1150, 250) == PT_OPEN);
-    CHECK(pt_on_touch(PT_CLOSED, 1131, 260) == PT_OPEN);
-    CHECK(pt_on_touch(PT_CLOSED, 1129, 260) == PT_CLOSED);
+    CHECK(pt_on_touch(PT_CLOSED, 1150, 250) == PT_CLOSED);
+    CHECK(pt_on_touch(PT_UNKNOWN, 1150, 250) == PT_UNKNOWN);
+    CHECK(pt_on_touch(PT_CLOSED, 1189, 260) == PT_CLOSED);
+    CHECK(pt_on_touch(PT_CLOSED, 1196, 260) == PT_CLOSED);
+    CHECK(pt_on_touch(PT_CLOSED, 1197, 260) == PT_OPEN);
+    CHECK(pt_on_touch(PT_CLOSED, 1215, 260) == PT_OPEN);
+    CHECK(pt_on_touch(PT_CLOSED, 1266, 259) == PT_OPEN);
 }
 
 static void test_other_touches_change_nothing(void)
@@ -58,7 +61,7 @@ static void test_open_panel_content_near_the_handle_does_not_close(void)
 
 static void test_region_edges(void)
 {
-    CHECK(pt_on_touch(PT_CLOSED, 1180, 215) == PT_OPEN);
+    CHECK(pt_on_touch(PT_CLOSED, 1200, 215) == PT_OPEN);
     CHECK(pt_on_touch(PT_CLOSED, 1129, 268) == PT_CLOSED);
     CHECK(pt_on_touch(PT_CLOSED, 1250, 296) == PT_CLOSED);
 }
@@ -67,7 +70,7 @@ int main(void)
 {
     test_tab_opens_and_handle_closes();
     test_assignment_is_absolute();
-    test_whole_label_opens();
+    test_only_the_stock_tab_zone_opens();
     test_other_touches_change_nothing();
     test_open_panel_content_near_the_handle_does_not_close();
     test_region_edges();

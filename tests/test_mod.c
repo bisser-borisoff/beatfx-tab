@@ -49,8 +49,9 @@ static az_surface *f_screate(const char *id, const az_surface_v1 *s)
 static void f_splace(az_surface *s, az_rect r)
 {
     (void)s;
-    /* calibrated on the deck (photos 2026-11-04): covers the stock tab, about x 1197-1280, y 237-282 */
-    g_placed_ok = r.x == 1130 && r.y == 233 && r.w == 150 && r.h == 52;
+    /* covers the stock tab, about x 1197-1280, y 237-282 (photos 2026-11-04); v0.1.3 is
+     * 24 px wider to the left, so the name sits left of the stock tab's touch zone */
+    g_placed_ok = r.x == 1106 && r.y == 233 && r.w == 174 && r.h == 52;
 }
 static void f_sshow(az_surface *s, int on) { (void)s; g_shown = on; }
 static void f_sredraw(az_surface *s) { (void)s; g_redraws++; }
@@ -195,6 +196,28 @@ int main(void)
     settle();
     CHECK(g_shown == 0);
     g_decks = 2;
+    settle();
+    CHECK(g_shown == 1);
+
+    /* 10b: a tap on the label's name is outside the stock tab's zone: the deck does not open
+     * the panel, so the label stays (v0.1.2 hid it, Бисер on the deck) */
+    touch(1150, 260);
+    settle();
+    CHECK(g_shown == 1);
+    touch(1185, 260);
+    settle();
+    CHECK(g_shown == 1);
+    /* the value box and the arrow are inside it */
+    touch(1225, 260);
+    settle();
+    CHECK(g_shown == 0);
+    touch(1067, 266);
+    settle();
+    CHECK(g_shown == 1);
+    touch(1266, 259);
+    settle();
+    CHECK(g_shown == 0);
+    touch(1067, 266);
     settle();
     CHECK(g_shown == 1);
 

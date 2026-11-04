@@ -6,13 +6,13 @@
 
 #include "geometry.h"
 
-/* Layout inside the label, in pixels from its left / top edge. */
-#define ARROW_X 6
+/* Layout. The name starts NAME_X from the label's left edge and ends ZONE_MARGIN short of the
+ * stock tab's touch zone (TAB_X0); the value box starts ZONE_MARGIN inside it; the arrow's tip
+ * is ARROW_RIGHT from the label's right edge, in the dark strip right of the waveform. */
+#define ARROW_RIGHT 17
 #define ARROW_HALF 6 /* rows above and below the tip */
-#define NAME_X 18
-#define NAME_GAP 4 /* between the name and the box */
+#define NAME_X 6
 #define BOX_W 46
-#define BOX_RIGHT 5
 #define BOX_VPAD 7
 #define NAME_PX_MAX 18
 #define BEAT_PX_MAX 20
@@ -36,7 +36,7 @@ static int fit_px(const az_core_v1 *C, const char *s, int max, int w)
 /* A left-pointing triangle, one fill_rect per row. */
 static void arrow(const az_core_v1 *C, az_draw *d, az_rect r, uint32_t rgb)
 {
-    int x0 = r.x + ARROW_X, cy = r.y + r.h / 2;
+    int x0 = r.x + r.w - ARROW_RIGHT, cy = r.y + r.h / 2;
     for (int k = -ARROW_HALF; k <= ARROW_HALF; k++) {
         int a = k < 0 ? -k : k;
         C->fill_rect(d, x0 + a, cy + k, ARROW_HALF + 1 - a, 1, rgb);
@@ -59,7 +59,7 @@ void label_paint(const az_core_v1 *C, az_draw *d, az_rect r, fxd_state s)
     if (!s.valid) return;
 
     /* The value, in a light box on the right. */
-    az_rect box = { r.x + r.w - BOX_RIGHT - BOX_W, r.y + BOX_VPAD, BOX_W, r.h - 2 * BOX_VPAD };
+    az_rect box = { TAB_X0 + ZONE_MARGIN, r.y + BOX_VPAD, BOX_W, r.h - 2 * BOX_VPAD };
     char value[8];
     if (s.beat) snprintf(value, sizeof value, "%s", s.beat);
     else snprintf(value, sizeof value, "%d%%", s.percent);
@@ -71,7 +71,7 @@ void label_paint(const az_core_v1 *C, az_draw *d, az_rect r, fxd_state s)
     }
 
     /* The name: full, smaller, then short, then cut to what fits. */
-    int name_w = box.x - NAME_GAP - (r.x + NAME_X);
+    int name_w = TAB_X0 - ZONE_MARGIN - (r.x + NAME_X);
     char name[24];
     snprintf(name, sizeof name, "%s", fxd_name(s.effect));
     int npx = fit_px(C, name, NAME_PX_MAX, name_w);

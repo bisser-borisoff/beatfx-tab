@@ -10,17 +10,21 @@
 #include "panel_track.h"
 
 /* The mod's label, right-aligned and opaque. It covers the stock tab, which photos on the
- * deck (2026-11-04, v0.1.0) put at about x 1197-1280, y 237-282, with a few pixels to spare. */
-#define LABEL_X 1130
+ * deck (2026-11-04, v0.1.0) put at about x 1197-1280, y 237-282, with a few pixels to spare.
+ * v0.1.3: 24 px wider to the left, so the name has its room left of the tab's touch zone. */
+#define LABEL_X 1106
 #define LABEL_Y 233
-#define LABEL_W 150
+#define LABEL_W 174
 #define LABEL_H 52
 
-/* A touch here (to the right edge) opens the panel: on the deck a tap anywhere on the label
- * does. */
-#define TAB_X0 LABEL_X
+/* Only the stock tab's own zone opens the panel, from TAB_X0 (its left edge on the photos) to
+ * the right edge: on the deck a tap on the name, left of it, did not, and a tap in the grey
+ * just left of the value box did (Бисер, 2026-11-04). The arrow and the value box are drawn
+ * inside it and the name left of it, ZONE_MARGIN pixels clear of the edge either side. */
+#define TAB_X0 1197
 #define TAB_Y0 215
 #define TAB_Y1 295
+#define ZONE_MARGIN 6
 
 /* A touch here is a tap on the open panel's handle: the panel closes. Kept tight (about
  * 20 px around the taps recorded at 1067,266 and 1068,255): a wrong "closed" puts the label
