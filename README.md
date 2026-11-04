@@ -7,14 +7,24 @@ An [AZ-MODS](https://github.com/Kyle-Hosman/xdj-az-mods) community mod for the X
 If you want your screen space back for beat and phrase matching, and outstanding situational
 awareness of your Beat FX, this is your mod.
 
+![The WAVEFORM 2 DECK screen with ECHO on: the collapsed tab lit in blue, beat value 1](shots/1-on.png)
+
 The BEAT FX panel takes a big part of the waveform screen while it is open. Collapsed, its tab
 shows only an arrow. Beat FX Tab turns that collapsed tab into a live display:
+
+![Left: the stock BEAT FX panel open. Right: the panel closed and the effect on the tab](shots/3-before-after.png)
 
 - the selected effect, as on the knob: DELAY, ECHO, PING PONG, SPIRAL, REVERB, ...
 - its beat value in a white box: 1/16 to 64 beats, LENGTH % for REVERB
 - **X-PAD** in the box while your finger plays the effect on the X-PAD
 - **off:** grey, with the name underlined in the effect group's color
 - **on:** the whole tab in that color
+
+| Off | Played on the X-PAD |
+|---|---|
+| ![ECHO off: a grey tab, the name underlined in blue](shots/2-off.png) | ![ECHO played on the X-PAD: X-PAD in the box](docs/images/xpad.png) |
+
+The pictures are photos of the deck's screen, straightened; their colors are close, not exact.
 
 | Color | Effects |
 |---|---|
