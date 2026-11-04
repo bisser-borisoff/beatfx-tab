@@ -117,7 +117,7 @@ UNIT_SAN     = -fsanitize=address,undefined -fno-sanitize-recover=all
 unit:
 	@mkdir -p $(OUT)/unit
 	@set -e; for t in $(UNIT_TESTS); do \
-	    n=$$(basename $$t .c); extra=""; [ "$$n" = test_mod ] && extra=beatfx-tab.c; \
+	    n=$$(basename $$t .c); extra=""; case "$$n" in test_mod*) extra=beatfx-tab.c;; esac; \
 	    $(TEST_CC) $(UNIT_FLAGS) $(UNIT_SAN) -o $(OUT)/unit/$$n $$t $(UNIT_LIBSRCS) $$extra -lpthread; \
 	    ./$(OUT)/unit/$$n; \
 	done
