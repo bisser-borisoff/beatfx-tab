@@ -7,7 +7,7 @@ An [AZ-MODS](https://github.com/Kyle-Hosman/xdj-az-mods) community mod for the X
 If you want your screen space back for beat and phrase matching, and outstanding situational
 awareness of your Beat FX, this is your mod.
 
-![The WAVEFORM 2 DECK screen with ECHO on: the collapsed tab lit in blue, beat value 1](shots/1-on.png)
+![The WAVEFORM 2 DECK screen with REVERB on: the collapsed tab lit in orange, LENGTH 50%, MST in the channel row](shots/1-on.png)
 
 The BEAT FX panel takes a big part of the waveform screen while it is open. Collapsed, its tab
 shows only an arrow. Beat FX Tab turns that collapsed tab into a live display:
@@ -23,7 +23,7 @@ shows only an arrow. Beat FX Tab turns that collapsed tab into a live display:
 
 | Off | Played on the X-PAD |
 |---|---|
-| ![ECHO off: a grey tab, the name underlined in blue](shots/2-off.png) | ![ECHO played on the X-PAD: X-PAD in the box](docs/images/xpad.png) |
+| ![ECHO off: a grey tab, the name underlined in blue, beat 3/4, CH 1 in the channel row](shots/2-off.png) | ![ECHO played on the X-PAD: X-PAD in the box](docs/images/xpad.png) |
 
 The pictures are photos of the deck's screen, straightened; their colors are close, not exact.
 

@@ -25,9 +25,9 @@
       "min_core": "1.2.3",
       "description": "New in 1.1: colours matched to the deck's stock theme, a channel row (CH SELECT), TIME in a grey box while you turn the TIME knob, and fixes: the label no longer vanishes after a CH SELECT press.\n\nKeep the BEAT FX panel closed and get your screen space back. On the 2 DECK waveform views, the collapsed tab shows the effect, its beat value (REVERB: LENGTH %; X-PAD on the pad) and its channel (3 1 2 4, MST, MIC, A, B). Off: grey; on: lit in the effect's color. Tap it as usual to open the stock panel.\n\nDisplay only: no hooks, files or network. Known issue: it stays on top of TRACK INFO.",
       "screenshots": [
-        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/beatfx-tab-1.1.0/beatfx-tab-1.1.0-shot1.png",
-        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/beatfx-tab-1.1.0/beatfx-tab-1.1.0-shot2.png",
-        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/beatfx-tab-1.1.0/beatfx-tab-1.1.0-shot3.png"
+        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/beatfx-tab-1.1.0/beatfx-tab-1.1.0-shot1-deck.png",
+        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/beatfx-tab-1.1.0/beatfx-tab-1.1.0-shot2-deck.png",
+        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/beatfx-tab-1.1.0/beatfx-tab-1.1.0-shot3-deck.png"
       ]
     }
   ]
