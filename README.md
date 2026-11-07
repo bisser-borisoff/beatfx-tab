@@ -16,6 +16,7 @@ shows only an arrow. Beat FX Tab turns that collapsed tab into a live display:
 
 - the selected effect, as on the knob: DELAY, ECHO, PING PONG, SPIRAL, REVERB, ...
 - its beat value in a white box: 1/16 to 64 beats, LENGTH % for REVERB
+- where the effect goes, in a row under the name (since 1.1)
 - **X-PAD** in the box while your finger plays the effect on the X-PAD
 - **off:** grey, with the name underlined in the effect group's color
 - **on:** the whole tab in that color
@@ -34,8 +35,24 @@ The pictures are photos of the deck's screen, straightened; their colors are clo
 | green | ROLL, TRIPLET ROLL |
 | purple | MOBIUS |
 
-Tap the tab where you always do, on the white box or the arrow, to open the stock panel. The
-label steps aside while the panel is open and comes back when you close it.
+### Where the effect goes (1.1)
+
+The row under the name follows the **CH SELECT** buttons. Its four places are the channels in
+the order of the mixer's faders, **3 1 2 4**:
+
+| CH SELECT | The row |
+|---|---|
+| 1, 2, 3 or 4 | the channel's number in its place, small dots in the other three |
+| MST | **MST** |
+| MIC | **MIC** |
+| CF.A | **A** in place of the left two dots |
+| CF.B | **B** in place of the right two dots |
+
+**Mod Menu > Beat FX channel row** turns the row off; the name then sits in the middle of the
+tab.
+
+To open the stock panel, tap the tab as always (its white box or arrow). The label steps aside
+while the panel is open and comes back when you close it.
 
 ## Where it shows
 
@@ -47,12 +64,22 @@ label steps aside while the panel is open and comes back when you close it.
 
 ## Safe by design
 
-- **Display only.** It reads the mixer's Beat FX report (which effect, which beat, on or off) and
-  where you touch the screen. Every frame and every touch goes on to the deck unchanged.
+- **Display only.** It reads the mixer's Beat FX report (which effect, which beat, on or off,
+  which CH SELECT button) and where you touch the screen. Every frame and every touch goes on to the deck unchanged.
 - **No hooks**, so it does not depend on a firmware version. No files, no network, no threads of
   its own.
 - It repaints at most 10 times a second, and only when what it shows changes.
-- When something is unknown, it shows the stock tab rather than a guess.
+- It shows a beat only when the mixer's TIME and BPM confirm it. When they do not, for example
+  while you turn the TIME knob, the box turns grey and shows TIME instead, as the stock panel
+  greys its beat box: in ms, as plain digits from 1000 ms up, or "--" without a TIME. A CH
+  SELECT value it does not know shows four dim dots, never a wrong channel.
+- A CH SELECT press makes the mixer report the new channel's BPM while TIME stays as it was
+  for the old one. The label then keeps the beat it last confirmed, as long as the effect, the
+  beat and TIME stay the same. Beats of 16, 32 and 64 are not kept this way and show TIME in
+  grey until the mixer works TIME out again.
+- The stock tab shows instead while the panel is open, after a start or Reload until you tap
+  the tab or its handle once (the mod cannot see whether the panel is open before that), and
+  for a knob position it does not know.
 
 ## Tested
 
@@ -64,7 +91,13 @@ label steps aside while the panel is open and comes back when you close it.
   try it at home before a gig, and tell us what you see in an issue or on Discord. Reports and
   pull requests are welcome.
 
-## Known issue
+## Known issues
+
+**16, 32 and 64 can be mixed up after a CH SELECT press.** If you press CH SELECT between two
+channels where one plays at double the other's tempo (for example 87 and 174 BPM) while a beat of
+16, 32 or 64 is selected, the box can show the next one up or down until the mixer works TIME
+out again (press BEAT or play a deck). 1.0.0 does the same. The other beat values are not
+affected. It goes away once the mixer's codes for these three beats are measured on a deck.
 
 **The label stays on top of TRACK INFO.** TRACK INFO (the **i** at the top right of the
 WAVEFORM screen) opens over the waveforms, and the label keeps showing on top of it. Close

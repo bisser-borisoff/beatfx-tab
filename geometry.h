@@ -38,11 +38,12 @@
  * v0.1.1: the grey darkened to the stock tab's look on the deck (white text was hard to read
  * on 0x8d939a). v0.1.7: the group colours matched by eye to the stock panel's X-PAD bar, on
  * the deck, against swatches beside the open panel (b.sr, two rounds); the purple is the
- * closest swatch made a little brighter. v0.1.9: the blue is AZ-MODS' Phase Meter blue
- * (PM_BLUE in the core's extras.c), so the two mods match; the stock bar's bright cyan
- * (0x00b4f0) was too loud as a full-size background on ECHO, the most used effect. */
-#define COL_OFF 0x5d6268
-#define COL_BLUE 0x28a0ff
+ * closest swatch made a little brighter. v1.1 (b.sr, 2026-11-06), from a screenshot of the
+ * deck (xwd over SSH) instead of photos: the grey is the deck UI's card colour (the track title
+ * strip, the deck panels, X-PAD PARAMETER), the blue the stock X-PAD bar's exact blue (the
+ * earlier tries 0x00b4f0 and 0x0096d2 were matched by eye; 0x28a0ff was the Phase Meter's). */
+#define COL_OFF 0x232323
+#define COL_BLUE 0x009be1
 #define COL_ORANGE 0xf07828
 #define COL_LIME 0x98d02c /* FLANGER, PHASER, FILTER, TRIPLET FILTER, TRANS */
 #define COL_GREEN 0x3c9820 /* ROLL, TRIPLET ROLL */
@@ -52,11 +53,30 @@
 #define COL_TEXT_ON 0x111111  /* name and arrow on a colour */
 #define COL_BOX 0xf2f2f2      /* the beat value's box */
 #define COL_BOX_TEXT 0x222222
+#define COL_BOX_UNSURE 0xa0a0a0 /* v1.1: the box while the beat is not confirmed (TIME in ms),
+                                 * as the stock panel greys its beat box when TIME is off a beat */
 
 /* While the effect is off, a line in its group's colour under the name (v0.1.2, b.sr's
  * pick from the mockup: 3 px), UNDERLINE_GAP pixels below the letters. */
 #define UNDERLINE_H 3
 #define UNDERLINE_GAP 3
+
+/* v1.1: the channel row under the name (b.sr's picks from the mockups and the deck,
+ * 2026-11-06): four slots in the order of the CH SELECT buttons (3 1 2 4), the first one on
+ * the name's left edge. DOT_SLOT0_CX is the first slot's centre, DOT_PITCH the step. The
+ * selected channel shows its digit, the others a DOT_DIM_PX dot in COL_DOT_DIM (effect off)
+ * or the group colour at 70% (effect on). MST and MIC show the word over all four, CF.A an A
+ * over the left pair, CF.B a B over the right pair. With the row on, the name moves up. */
+#define NAME_RAISE 9
+#define DOT_ROW_CY 38 /* the row's centre, from the label's top; with NAME_RAISE, the name and
+                       * the row sit in the label's middle (9 px of ground above and below,
+                       * measured on a screenshot of the deck, 2026-11-06; was 4 and 43) */
+#define NAME_X 10 /* the name's inset, as the arrow's room on the right (b.sr, 1.0.98; was 6) */
+#define DOT_SLOT0_CX (NAME_X + 4)
+#define DOT_PITCH 13
+#define DOT_DIM_PX 4
+#define DOT_TEXT_PX 12 /* the digits, MST, MIC, A and B */
+#define COL_DOT_DIM 0x868b91
 
 /* What the mod assumes about the panel when the deck starts (PT_UNKNOWN keeps the label
  * hidden until a tap on the tab or the handle tells). */
