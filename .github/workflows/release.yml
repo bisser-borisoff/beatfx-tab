@@ -10,12 +10,12 @@
 # the .azmod and its icon to a GitHub release for the tag, and prints the
 # azmods-repo.json entry. If UPDATE_INDEX is "true" and your repository has an
 # azmods-repo.json at its root, it also adds the entry and commits it.
-name: release
+name: release-beatfx-tab
 
 on:
   push:
-    # this mod's tags only; a repository with several mods keeps just "beatfx-tab-*" here
-    tags: ["beatfx-tab-*", "v*"]
+    # this mod's tags only (Nudge Indicator has its own workflow)
+    tags: ["beatfx-tab-*"]
 
 permissions:
   contents: write          # create the release and (optionally) commit the repository file

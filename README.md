@@ -1,5 +1,7 @@
 # Beat FX Tab
 
+> b.sr's mods for the XDJ-AZ live in this repository: **Beat FX Tab** (this page) and **[Nudge Indicator](nudge-indicator/)**, a sign for beatmatching by hand.
+
 **Reclaim your screen. Keep your Beat FX in sight.**
 
 An [AZ-MODS](https://github.com/Kyle-Hosman/xdj-az-mods) community mod for the XDJ-AZ.
