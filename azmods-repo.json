@@ -33,27 +33,27 @@
     {
       "id": "nudge-indicator",
       "name": "Nudge Indicator",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "b.sr",
-      "summary": "Beatmatching by hand? See how many ms apart the two decks' beats are, and a green line when they are in phase.",
-      "icon": "https://github.com/bisser-borisoff/beatfx-tab/releases/download/nudge-indicator-1.0.0/nudge-indicator-1.0.0-icon.png",
-      "package": "https://github.com/bisser-borisoff/beatfx-tab/releases/download/nudge-indicator-1.0.0/nudge-indicator-1.0.0.azmod",
-      "sha256": "208475ae1c2ba3700350950e24cb2649d0488fb0681cc50d597095569abe6d27",
-      "size": 160597,
+      "summary": "Beatmatching by hand? See whether the tempos match before you press Play, then how many ms apart the beats are.",
+      "icon": "https://github.com/bisser-borisoff/beatfx-tab/releases/download/nudge-indicator-1.1.0/nudge-indicator-1.1.0-icon.png",
+      "package": "https://github.com/bisser-borisoff/beatfx-tab/releases/download/nudge-indicator-1.1.0/nudge-indicator-1.1.0.azmod",
+      "sha256": "91e859c0b383ebd615e139ec7a7ed86363f30221c555cca0b40ed07452a475f7",
+      "size": 169943,
       "firmware": [
         "any"
       ],
       "hooks": false,
       "source": "https://github.com/bisser-borisoff/beatfx-tab/tree/main/nudge-indicator",
-      "updated": "2026-11-15",
+      "updated": "2026-11-16",
       "category": "visual",
       "license": "GPL-3.0-only",
       "min_core": "1.2.3",
-      "description": "For beatmatching by hand. On the 2 DECK waveform view, while decks 1 and 2 play at the same tempo, two small ticks and a number show how far apart their beats are, in milliseconds. The upper tick is deck 1, the lower one deck 2: right of it when deck 2 is behind, left when it is ahead. Nudge until they meet: within 5 ms they turn into one green line. It compares the tracks' beat grids, as Sync does, so it is only as accurate as their rekordbox analysis: where a grid is off, the line shows while the beats are audibly apart. Works with or without the core's Phase Meter. Display only: no hooks.\n\nThe lower tick moves 1 px per millisecond, up to 14 px; past that, read the number. The green line stays up to 5 ms and through a brief jump in the reading. The sign sits right of the deck's loop sign, between the two waveforms; with the Phase Meter on it moves left of the meter's rulers by itself. It hides while a deck is stopped, while the tempos differ (more than 0.2 % for 2 seconds), on the 4 DECK views and with themes on. It compares beats, not bars. The Status page in the Mod Menu shows live what the mod sees. No files, no network, and it never touches a button, a knob or the audio.",
+      "description": "For beatmatching by hand, on the 2 DECK waveform view. Before you press Play, a small symbol shows whether decks 1 and 2 have the same tempo: two circles, grey while the tempos differ, green when they match. Once both decks play at the same tempo, two ticks and a number show how far apart their beats are, in milliseconds: nudge until the ticks meet, and within 5 ms they turn into one green line. It compares the tracks' beat grids, as Sync does, so it is only as accurate as their rekordbox analysis. Works with or without the core's Phase Meter. Display only: no hooks.\n\nThe tempos match when they are within 0.05 BPM of each other, the same number on both BPM displays; half or double tempo does not count. The upper tick is deck 1, the lower one deck 2: right of it when deck 2 is behind, left when it is ahead, 1 px per millisecond, up to 14 px; past that, read the number. The green line stays up to 5 ms and through a brief jump in the reading. If the tempos drift more than 0.2 % apart for 2 seconds while both decks play, the grey symbol comes back. The sign sits right of the deck's loop sign, between the two waveforms; with the Phase Meter on it moves left of the meter's rulers by itself. Nothing shows while deck 1 or 2 is empty, on the 4 DECK views or with themes on. It compares beats, not bars. The Status page in the Mod Menu shows live what the mod sees. No files, no network, and it never touches a button, a knob or the audio.",
       "screenshots": [
-        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/nudge-indicator-1.0.0/nudge-indicator-1.0.0-shot1.png",
-        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/nudge-indicator-1.0.0/nudge-indicator-1.0.0-shot2.png",
-        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/nudge-indicator-1.0.0/nudge-indicator-1.0.0-shot3.png"
+        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/nudge-indicator-1.1.0/nudge-indicator-1.1.0-shot1.png",
+        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/nudge-indicator-1.1.0/nudge-indicator-1.1.0-shot2.png",
+        "https://github.com/bisser-borisoff/beatfx-tab/releases/download/nudge-indicator-1.1.0/nudge-indicator-1.1.0-shot3.png"
       ]
     }
   ]
