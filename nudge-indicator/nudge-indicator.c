@@ -3,6 +3,8 @@
  * nudge-indicator: on the 2 DECK screen a small sign shows how far apart in milliseconds the beat
  * phases of decks 1 and 2 are while both play at the same tempo (two ticks that slide against each
  * other and the difference as a number), and a green line when they are where Sync would put them.
+ * While there is no such reading (a deck waits on Cue, or the tempos differ) the same box shows the
+ * tempo symbol: two circles, grey outlines while the two tempos differ, green when they match.
  * The decisions are in phase.c (the difference, the gate, the lock state machine), the picture is
  * in sign_draw.c. This file is the shell: services, one surface, the Mod Menu rows, the Status page.
  *
@@ -158,6 +160,8 @@ static void tick(void)
     }
 
     sign_state ns;
+    ns.tempo = s_out.state == PL_TEMPO;
+    ns.match = s_out.tempo_match;
     ns.locked = s_out.state == PL_LOCKED;
     ns.dx = s_out.dx;
     ns.ms = s_out.ms > MS_MAX ? MS_MAX : s_out.ms;
@@ -217,6 +221,8 @@ static void deck_line(int side, char *out, size_t n)
 {
     const pl_in *in = &s_in;
     if (!in->loaded[side]) snprintf(out, n, "Deck %d: no track", side + 1);
+    else if (!in->playing[side] && bpm_valid(in->bpm[side]))
+        snprintf(out, n, "Deck %d: stopped, %.1f BPM", side + 1, in->bpm[side]);
     else if (!in->playing[side]) snprintf(out, n, "Deck %d: stopped", side + 1);
     else if (!in->grid_ok[side] || !ph_valid(in->ph[side])) snprintf(out, n, "Deck %d: no beat grid", side + 1);
     else if (!bpm_valid(in->bpm[side])) snprintf(out, n, "Deck %d: tempo unknown", side + 1);
@@ -228,6 +234,15 @@ static void diff_line(char *out, size_t n)
     if (!s_out.have_delta) snprintf(out, n, "Difference: -");
     else if (fabs(s_out.delta_ms) < IN_PHASE_MS) snprintf(out, n, "Difference: in phase (%.1f ms)", fabs(s_out.delta_ms));
     else snprintf(out, n, "Difference: deck %d ahead by %.1f ms", s_out.delta_ms > 0.0 ? 1 : 2, fabs(s_out.delta_ms));
+}
+
+/* The tempo symbol's answer, with the two tempos to two places (the deck's own display shows one). */
+static void tempo_line(char *out, size_t n)
+{
+    if (!s_out.have_tempo) snprintf(out, n, "Tempo: -");
+    else
+        snprintf(out, n, "Tempo: %s (%.2f / %.2f)", s_out.tempo_match ? "matched" : "differs", s_in.bpm[0],
+                 s_in.bpm[1]);
 }
 
 /* The reason the sign is not "locked" (pl_why), in words. */
@@ -300,6 +315,8 @@ static void on_draw(az_draw *d, az_rect a, void *user)
         deck_line(side, line, sizeof line);
         put_line(d, a, &y, line);
     }
+    tempo_line(line, sizeof line);
+    put_line(d, a, &y, line);
     diff_line(line, sizeof line);
     put_line(d, a, &y, line);
     lock_line(line, sizeof line);
@@ -326,7 +343,8 @@ static void register_rows(void)
     row.label = "Nudge Indicator";
     row.kind = AZ_ROW_TOGGLE;
     row.flags = AZ_ROW_DEFAULT_ON;
-    row.help = "Shows how far apart the two decks' beats are, and a green line when they are in phase.";
+    row.help = "Shows whether the two decks' tempos match, how far apart their beats are, and a green line "
+               "when they are in phase.";
     g_row_enabled = C->register_row(MOD_ID, &row); /* -1: the sign stays on */
 
     memset(&row, 0, sizeof row);
@@ -349,6 +367,7 @@ static int init(const az_core_v1 *core)
         C->log(MOD_ID, "this core lacks a service nudge-indicator needs (AZ-MODS 1.2.3 or newer)");
         return 2;
     }
+    if (!AZ_HAS(C, draw_image)) C->log(MOD_ID, "no draw_image: the tempo symbol is the word only");
     if (AZ_HAS(C, row_lookup)) g_row_pm = C->row_lookup("phase-meter");
     else C->log(MOD_ID, "no row_lookup: the Phase Meter is taken as off");
     int rows = AZ_HAS(C, register_row) && AZ_HAS(C, row_value);

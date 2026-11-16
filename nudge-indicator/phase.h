@@ -11,9 +11,12 @@ double pl_delta_ms(double ph1, double ph2, double bpm1, double bpm2);
 int    pl_dx(double delta_ms);       /* round to nearest, clamped to [-DX_MAX, DX_MAX] */
 int    pl_show_ms(double delta_ms);  /* |delta| rounded to nearest whole ms */
 
-typedef enum { PL_HIDDEN = 0, PL_NUDGE, PL_LOCKED } pl_state;
+/* PL_NUDGE and PL_LOCKED are the reading (ticks and ms, or the green line). PL_TEMPO is the tempo
+ * symbol: both decks are loaded and their tempos known, but there is no reading to show. */
+typedef enum { PL_HIDDEN = 0, PL_NUDGE, PL_LOCKED, PL_TEMPO } pl_state;
 
 /* Why the sign is not "locked". The first failing check, in this order (design 5.2, 5.3, 6.3).
+ * From PL_STOPPED_1 on the tempo symbol can still be shown (state PL_TEMPO) if both tempos are known.
  * The view is not one of them: the mod shell hides the surface when it is not the deck view. */
 typedef enum {
     PL_OK = 0,        /* locked */
@@ -43,6 +46,8 @@ typedef struct {                   /* zero-initialised = hidden, nothing remembe
     int      tempo_bad; uint32_t tempo_bad_since;  /* tempo out of TEMPO_TOL since */
     int      far;       uint32_t far_since;        /* locked, and |delta| > LOCK_OUT_MS since */
     int      seen;      uint32_t last_t;           /* the previous tick's clock */
+    int      sym_seen;  int sym_match;             /* the tempo symbol's answer, debounced */
+    int      sym_pend;  uint32_t sym_since;        /* the other answer has been read since */
 } pl_sm;
 
 typedef struct {
@@ -51,6 +56,8 @@ typedef struct {
     int      have_delta; /* delta_ms, dx and ms are valid (checks up to PL_NO_TEMPO_2 passed) */
     double   delta_ms;
     int      dx, ms;
+    int      have_tempo;  /* both decks are loaded and both tempos known: tempo_match is valid */
+    int      tempo_match; /* |bpm1 - bpm2| <= TEMPO_MATCH_BPM, debounced by TEMPO_SYM_HOLD_MS */
 } pl_out;
 
 void pl_step(pl_sm *sm, const pl_in *in, pl_out *out);

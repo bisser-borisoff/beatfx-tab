@@ -14,6 +14,9 @@ typedef struct { int x, y, px; uint32_t c; char s[16]; } text_rec;
 static fill_rec g_fill[16];
 static text_rec g_text[16];
 static int g_nfill, g_ntext;
+typedef struct { int x, y, w, h; const unsigned char *rgba; } img_rec;
+static img_rec g_img[4];
+static int g_nimg;
 
 static void f_fill(az_draw *d, int x, int y, int w, int h, uint32_t c)
 {
@@ -30,12 +33,21 @@ static void f_text(az_draw *d, int x, int y, const char *s, int px, uint32_t c)
     }
     g_ntext++;
 }
+static int f_image(az_draw *d, int x, int y, const unsigned char *rgba, int w, int h)
+{
+    (void)d;
+    if (g_nimg < 4) g_img[g_nimg] = (img_rec){ x, y, w, h, rgba };
+    g_nimg++;
+    return 0;
+}
 static int f_text_width(const char *s, int px) { return (int)strlen(s) * px * 3 / 5; }
 
 static az_core_v1 g_core;
 static void paint(az_rect area, sign_state s)
 {
-    g_nfill = g_ntext = 0;
+    g_nfill = g_ntext = g_nimg = 0;
+    g_core.size = sizeof g_core;
+    g_core.draw_image = f_image;
     g_core.fill_rect = f_fill;
     g_core.draw_text = f_text;
     g_core.text_width = f_text_width;
@@ -54,7 +66,7 @@ static int text_is(int i, const char *s, int x, int y, int px, uint32_t c)
 
 static void test_nudge(void)
 {
-    paint((az_rect){ 456, 259, 89, 27 }, (sign_state){ 0, 12, 12 });
+    paint((az_rect){ 456, 259, 89, 27 }, (sign_state){ 0, 12, 12, 0, 0 });
     CHECK(g_nfill == 3);
     CHECK(fill_is(0, 456, 259, 89, 27, COL_BG));
     CHECK(fill_is(1, 471, 261, 5, 10, COL_TICK));
@@ -66,7 +78,7 @@ static void test_nudge(void)
 
 static void test_nudge_left(void)   /* dx -4, ms 4: deck 2's tick at x 467 */
 {
-    paint((az_rect){ 456, 259, 89, 27 }, (sign_state){ 0, -4, 4 });
+    paint((az_rect){ 456, 259, 89, 27 }, (sign_state){ 0, -4, 4, 0, 0 });
     CHECK(g_nfill == 3);
     CHECK(fill_is(0, 456, 259, 89, 27, COL_BG));
     CHECK(fill_is(1, 471, 261, 5, 10, COL_TICK));
@@ -78,7 +90,7 @@ static void test_nudge_left(void)   /* dx -4, ms 4: deck 2's tick at x 467 */
 
 static void test_locked(void)
 {
-    paint((az_rect){ 456, 259, 89, 27 }, (sign_state){ 1, 0, 0 });
+    paint((az_rect){ 456, 259, 89, 27 }, (sign_state){ 1, 0, 0, 0, 0 });
     CHECK(g_nfill == 2);
     CHECK(fill_is(0, 456, 259, 89, 27, COL_BG));
     CHECK(fill_is(1, 471, 261, 5, 20, COL_LOCK));
@@ -87,7 +99,7 @@ static void test_locked(void)
 
 static void test_other_box(void)    /* every x and y moves with the box */
 {
-    paint((az_rect){ 42, 90, 89, 27 }, (sign_state){ 0, 12, 12 });
+    paint((az_rect){ 42, 90, 89, 27 }, (sign_state){ 0, 12, 12, 0, 0 });
     CHECK(g_nfill == 3);
     CHECK(fill_is(0, 42, 90, 89, 27, COL_BG));
     CHECK(fill_is(1, 57, 92, 5, 10, COL_TICK));
@@ -95,7 +107,7 @@ static void test_other_box(void)    /* every x and y moves with the box */
     CHECK(g_ntext == 2);
     CHECK(text_is(0, "12", 80, 90 + NUM_DY, NUM_PX, COL_NUM));
     CHECK(text_is(1, "ms", 80 + f_text_width("12", NUM_PX) + UNIT_GAP, 90 + UNIT_DY, UNIT_PX, COL_UNIT));
-    paint((az_rect){ 42, 90, 89, 27 }, (sign_state){ 1, 0, 0 });
+    paint((az_rect){ 42, 90, 89, 27 }, (sign_state){ 1, 0, 0, 0, 0 });
     CHECK(g_nfill == 2);
     CHECK(fill_is(0, 42, 90, 89, 27, COL_BG));
     CHECK(fill_is(1, 57, 92, 5, 20, COL_LOCK));
@@ -106,18 +118,58 @@ static void test_three_digits_fit(void)
 {
     az_rect areas[2] = { { BOX_OFF_X, BOX_OFF_Y, BOX_W, BOX_H }, { BOX_ON_X, BOX_ON_Y, BOX_W, BOX_H } };
     for (int i = 0; i < 2; i++) {
-        paint(areas[i], (sign_state){ 0, DX_MAX, 240 });
+        paint(areas[i], (sign_state){ 0, DX_MAX, 240, 0, 0 });
         CHECK(g_ntext == 2 && strcmp(g_text[0].s, "240") == 0);
         int end = g_text[0].x + f_text_width("240", NUM_PX) + UNIT_GAP + f_text_width("ms", UNIT_PX);
         CHECK(end <= areas[i].x + BOX_W);
     }
 }
 
+static void test_tempo_symbol(void)
+{
+    az_rect areas[2] = { { BOX_OFF_X, BOX_OFF_Y, BOX_W, BOX_H }, { BOX_ON_X, BOX_ON_Y, BOX_W, BOX_H } };
+    const unsigned char *bmp[2] = { NULL, NULL };
+    for (int i = 0; i < 2; i++) {
+        for (int match = 0; match < 2; match++) {
+            paint(areas[i], (sign_state){ .tempo = 1, .match = match, .locked = 1, .dx = 9, .ms = 77 });
+            CHECK(g_nfill == 1 && fill_is(0, areas[i].x, areas[i].y, BOX_W, BOX_H, COL_BG)); /* no ticks */
+            CHECK(g_nimg == 1 && g_img[0].x == areas[i].x + 4 && g_img[0].y == areas[i].y + 4 &&
+                  g_img[0].w == 26 && g_img[0].h == 16);
+            CHECK(g_ntext == 1);
+            CHECK(text_is(0, "TEMPO", areas[i].x + 38, areas[i].y + 3, UNIT_PX, match ? COL_LOCK : COL_UNIT));
+            CHECK(g_text[0].x + f_text_width("TEMPO", UNIT_PX) <= areas[i].x + BOX_W);
+            bmp[match] = g_img[0].rgba;
+        }
+    }
+    CHECK(bmp[0] && bmp[1] && bmp[0] != bmp[1]);
+    /* the bitmaps: opaque, inside the box, the symbol's own colours where the ink is */
+    CHECK(SYM_DX + SYM_W <= WORD_DX && SYM_DY + SYM_H <= BOX_H);
+    int green = 0, grey = 0;
+    for (int p = 0; p < 26 * 16; p++) {
+        const unsigned char *g = bmp[1] + p * 4, *w = bmp[0] + p * 4;
+        CHECK(g[3] == 255 && w[3] == 255);
+        if (g[0] == 0x2E && g[1] == 0xE0 && g[2] == 0x6A) green++;
+        if (w[0] == 0x96 && w[1] == 0x96 && w[2] == 0x96) grey++;
+    }
+    CHECK(green > 150);   /* two filled circles */
+    CHECK(grey > 40);     /* two outlines */
+    /* without draw_image only the word is drawn */
+    g_nfill = g_ntext = g_nimg = 0;
+    az_core_v1 old = g_core;
+    old.draw_image = NULL;
+    sign_paint(&old, NULL, areas[0], &(sign_state){ .tempo = 1, .match = 1 });
+    CHECK(g_nimg == 0 && g_ntext == 1 && g_nfill == 1);
+}
+
 static void test_same(void)
 {
-    sign_state a = { 1, 3, 7 }, b = { 1, 0, 0 };
+    sign_state t0 = { .tempo = 1, .match = 0 }, t1 = { .tempo = 1, .match = 1 }, t1b = { .tempo = 1, .match = 1, .ms = 9 };
+    sign_state lk = { .locked = 1 }, nd = { .dx = 3, .ms = 7 };
+    CHECK(!sign_same(&t0, &t1) && sign_same(&t1, &t1b));   /* the symbol: only its colour counts */
+    CHECK(!sign_same(&t1, &lk) && !sign_same(&lk, &t1) && !sign_same(&t0, &nd) && !sign_same(&nd, &t0));
+    sign_state a = { 1, 3, 7, 0, 0 }, b = { 1, 0, 0, 0, 0 };
     CHECK(sign_same(&a, &b));                 /* locked ignores dx and ms */
-    sign_state c = { 0, 3, 7 }, d = { 0, 4, 7 }, e = { 0, 3, 8 }, f = { 0, 3, 7 };
+    sign_state c = { 0, 3, 7, 0, 0 }, d = { 0, 4, 7, 0, 0 }, e = { 0, 3, 8, 0, 0 }, f = { 0, 3, 7, 0, 0 };
     CHECK(!sign_same(&c, &d));
     CHECK(!sign_same(&c, &e));
     CHECK(sign_same(&c, &f));
@@ -131,6 +183,7 @@ int main(void)
     test_locked();
     test_other_box();
     test_three_digits_fit();
+    test_tempo_symbol();
     test_same();
     printf("test_sign_draw: %d/%d checks passed\n", passed, total);
     return passed == total ? 0 : 1;

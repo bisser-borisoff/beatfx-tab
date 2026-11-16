@@ -35,7 +35,8 @@ TEST(shows_and_places_meter_off)
         CHECK(g_rows[en].kind == AZ_ROW_TOGGLE && (g_rows[en].flags & AZ_ROW_DEFAULT_ON));
         CHECK(strcmp(g_rows[en].label, "Nudge Indicator") == 0);
         CHECK(strcmp(g_rows[en].help,
-                     "Shows how far apart the two decks' beats are, and a green line when they are in phase.") == 0);
+                     "Shows whether the two decks' tempos match, how far apart their beats are, and a green line "
+                     "when they are in phase.") == 0);
         CHECK(g_rows[st].kind == AZ_ROW_SCREEN && strcmp(g_rows[st].label, "Status") == 0);
         CHECK(g_rows[st].screen && g_rows[st].screen->on_draw);
     }
@@ -134,8 +135,10 @@ static void brk_deck3(void) { g_fd[2].loaded = 1; }
 static void fix_deck3(void) { g_fd[2].loaded = 0; }
 static void brk_row(void) { g_rowv[row_by_key("enabled")] = 0; }
 static void fix_row(void) { g_rowv[row_by_key("enabled")] = 1; }
-static void brk_stop2(void) { g_fd[1].playing = 0; }
-static void fix_stop2(void) { g_fd[1].playing = 1; }
+static void brk_load2(void) { g_fd[1].loaded = 0; }
+static void fix_load2(void) { g_fd[1].loaded = 1; }
+static void brk_bpm1(void) { g_fd[0].bpm = 0.0; }
+static void fix_bpm1(void) { g_fd[0].bpm = 125.0; }
 
 TEST(hidden_cases)
 {
@@ -148,7 +151,8 @@ TEST(hidden_cases)
     hidden_case("4 decks", brk_decks, fix_decks);
     hidden_case("deck 3 loaded", brk_deck3, fix_deck3);
     hidden_case("row off", brk_row, fix_row);
-    hidden_case("deck 2 stopped", brk_stop2, fix_stop2);
+    hidden_case("deck 2 has no track", brk_load2, fix_load2);
+    hidden_case("deck 1's tempo is unknown", brk_bpm1, fix_bpm1);
 }
 
 TEST(lock_shows_line_and_stops_redrawing)
@@ -206,15 +210,16 @@ TEST(state_change_paints_at_once)
     both_play(0.30, 0.325);
     tick_ms(0);
     CHECK(g_sredraws[0] == 1 && g_sshown[0] == 1);
-    g_fd[1].playing = 0; /* nudge -> hidden */
-    tick_ms(STEP_MS);
-    CHECK(g_sshown[0] == 0);
-    g_fd[1].playing = 1; /* hidden -> nudge, 80 ms after the first paint: painted at once */
-    tick_ms(STEP_MS);
-    CHECK(g_sshown[0] == 1 && g_sredraws[0] == 2);
     sign_state s;
+    g_fd[1].playing = 0; /* nudge -> the tempo symbol, 40 ms after the first paint: painted at once */
+    tick_ms(STEP_MS);
     sign_of(&s);
-    CHECK(s.locked == 0 && s.dx == -12 && s.ms == 12);
+    CHECK(g_sshown[0] == 1 && g_sredraws[0] == 2 && s.tempo == 1 && s.match == 1);
+    g_fd[1].playing = 1; /* the symbol -> nudge: painted at once */
+    tick_ms(STEP_MS);
+    CHECK(g_sshown[0] == 1 && g_sredraws[0] == 3);
+    sign_of(&s);
+    CHECK(s.tempo == 0 && s.locked == 0 && s.dx == -12 && s.ms == 12);
     /* nudge -> locked inside the cap: painted at once as well */
     both_play(0.30, 0.30);
     for (int i = 0; i < 20; i++) tick_ms(STEP_MS);
@@ -338,15 +343,16 @@ TEST(page_playing_apart)
     CHECK(load_mod(0) == 0);
     both_play(0.30, 0.325);
     tick_ms(STEP_MS);
-    CHECK(page_lines() == 6);
+    CHECK(page_lines() == 7);
     CHECK(strcmp(g_text[0].s, "Nudge Indicator") == 0); /* the header, then one text row each at 20 px */
     CHECK(strcmp(g_text[1].s, "Deck 1: plays, 125.0 BPM, phase 0.30") == 0);
     CHECK(strcmp(g_text[2].s, "Deck 2: plays, 125.0 BPM, phase 0.33") == 0 ||
           strcmp(g_text[2].s, "Deck 2: plays, 125.0 BPM, phase 0.32") == 0);
-    CHECK(strcmp(g_text[3].s, "Difference: deck 2 ahead by 12.0 ms") == 0);
-    CHECK(strcmp(g_text[4].s, "In phase: no, 12 ms apart") == 0);
-    CHECK(strcmp(g_text[5].s, "Place: right of the loop sign (Phase Meter off)") == 0);
-    for (int i = 1; i < 6; i++) CHECK(g_text[i].px == 20 && g_text[i].x > 0 && g_text[i].y > g_text[i - 1].y);
+    CHECK(strcmp(g_text[3].s, "Tempo: matched (125.00 / 125.00)") == 0);
+    CHECK(strcmp(g_text[4].s, "Difference: deck 2 ahead by 12.0 ms") == 0);
+    CHECK(strcmp(g_text[5].s, "In phase: no, 12 ms apart") == 0);
+    CHECK(strcmp(g_text[6].s, "Place: right of the loop sign (Phase Meter off)") == 0);
+    for (int i = 1; i < 7; i++) CHECK(g_text[i].px == 20 && g_text[i].x > 0 && g_text[i].y > g_text[i - 1].y);
 }
 
 TEST(page_difference_and_place)
@@ -369,7 +375,7 @@ TEST(page_difference_and_place)
     g_fd[1].playing = 0;
     tick_ms(STEP_MS);
     CHECK(has("Difference: -"));
-    CHECK(has("Deck 2: stopped"));
+    CHECK(has("Deck 2: stopped, 125.0 BPM"));
 }
 
 static void to_hidden(void) /* a tick with deck 2 stopped: the next shows from hidden */
@@ -417,10 +423,10 @@ TEST(page_each_reason)
     CHECK(lock_is("deck 2 has no track")); CHECK(has("Deck 2: no track"));
     fresh(); tick_ms(STEP_MS);
     g_fd[0].playing = 0; tick_ms(STEP_MS);
-    CHECK(lock_is("deck 1 is stopped")); CHECK(has("Deck 1: stopped"));
+    CHECK(lock_is("deck 1 is stopped")); CHECK(has("Deck 1: stopped, 125.0 BPM"));
     fresh(); tick_ms(STEP_MS);
     g_fd[1].playing = 0; tick_ms(STEP_MS);
-    CHECK(lock_is("deck 2 is stopped")); CHECK(has("Deck 2: stopped"));
+    CHECK(lock_is("deck 2 is stopped")); CHECK(has("Deck 2: stopped, 125.0 BPM"));
     fresh(); tick_ms(STEP_MS);
     g_fd[0].grid_ok = 0; tick_ms(STEP_MS);
     CHECK(lock_is("deck 1 has no beat grid")); CHECK(has("Deck 1: no beat grid"));
@@ -449,6 +455,110 @@ TEST(page_each_reason)
     CHECK(lock_is("settling"));
     for (int i = 0; i < 8; i++) tick_ms(STEP_MS);
     CHECK(has("In phase: yes"));
+}
+
+/* ---- the tempo symbol ---- */
+
+#define SYM_SETTLE_TICKS 8 /* 320 ms: past TEMPO_SYM_HOLD_MS */
+
+TEST(tempo_symbol_while_deck_waits)
+{
+    CHECK(load_mod(0) == 0);
+    deck_set(0, 1, 1, 125.0, 0.30, 1);
+    deck_set(1, 1, 0, 125.0, 0.00, 1); /* loaded, waiting on Cue, the same tempo */
+    tick_ms(STEP_MS);
+    sign_state s;
+    pl_out o;
+    sign_of(&s);
+    pl_test_out(&o);
+    CHECK(g_sshown[0] == 1 && g_sredraws[0] == 1);
+    CHECK(o.state == PL_TEMPO && o.why == PL_STOPPED_2 && o.have_tempo == 1 && o.tempo_match == 1);
+    CHECK(s.tempo == 1 && s.match == 1);
+    for (int i = 0; i < SYM_SETTLE_TICKS; i++) tick_ms(STEP_MS);
+    CHECK(g_sredraws[0] == 1); /* nothing changed: no repaint */
+
+    struct az_draw d = { 0 };
+    draw_reset();
+    g_sdesc[0].on_paint(&d, g_splace[0], g_sdesc[0].user);
+    CHECK(g_nfill == 1 && g_nimg == 1 && g_ntext == 1);
+    CHECK(g_img[0].x == 456 + SYM_DX && g_img[0].y == 259 + SYM_DY && g_img[0].w == SYM_W && g_img[0].h == SYM_H);
+    CHECK(strcmp(g_text[0].s, "TEMPO") == 0 && g_text[0].x == 456 + WORD_DX && g_text[0].rgb == COL_LOCK);
+    const unsigned char *green = g_img[0].rgba;
+
+    g_fd[1].bpm = 122.0; /* the tempo fader moved: the colour follows after the hold, in one repaint */
+    tick_ms(STEP_MS);
+    sign_of(&s);
+    CHECK(s.match == 1 && g_sredraws[0] == 1);
+    for (int i = 0; i < SYM_SETTLE_TICKS; i++) tick_ms(STEP_MS);
+    sign_of(&s);
+    CHECK(s.tempo == 1 && s.match == 0 && g_sredraws[0] == 2);
+    draw_reset();
+    g_sdesc[0].on_paint(&d, g_splace[0], g_sdesc[0].user);
+    CHECK(g_nimg == 1 && g_img[0].rgba != green && g_text[0].rgb == COL_UNIT);
+
+    g_fd[1].playing = 1; /* Play with the tempos still apart: the symbol stays, grey */
+    tick_ms(STEP_MS);
+    sign_of(&s);
+    pl_test_out(&o);
+    CHECK(g_sshown[0] == 1 && s.tempo == 1 && s.match == 0 && o.why == PL_TEMPO_DIFF);
+
+    g_fd[1].bpm = 125.0; /* tempos equal and both play: the reading takes the symbol's place */
+    tick_ms(STEP_MS);
+    sign_of(&s);
+    CHECK(g_sshown[0] == 1 && s.tempo == 0);
+}
+
+TEST(tempo_symbol_both_stopped_and_hidden_cases)
+{
+    CHECK(load_mod(0) == 0);
+    deck_set(0, 1, 0, 125.0, 0.0, 1);
+    deck_set(1, 1, 0, 125.02, 0.0, 1); /* 0.02 BPM apart: still "matched" */
+    tick_ms(STEP_MS);
+    sign_state s;
+    sign_of(&s);
+    CHECK(g_sshown[0] == 1 && s.tempo == 1 && s.match == 1);
+    g_fd[1].bpm = 0.0; /* the tempo of deck 2 is unknown: nothing to compare */
+    tick_ms(STEP_MS);
+    CHECK(g_sshown[0] == 0);
+    g_fd[1].bpm = 128.0; /* back, and different: the first answer counts at once */
+    tick_ms(STEP_MS);
+    sign_of(&s);
+    CHECK(g_sshown[0] == 1 && s.tempo == 1 && s.match == 0);
+    g_fd[1].loaded = 0;
+    tick_ms(STEP_MS);
+    CHECK(g_sshown[0] == 0);
+    g_fd[1].loaded = 1;
+    g_view = AZ_VIEW_MENU;
+    tick_ms(STEP_MS);
+    CHECK(g_sshown[0] == 0);
+}
+
+TEST(tempo_symbol_without_draw_image)
+{
+    CHECK(load_mod(FK_NO_IMAGE) == 0);
+    CHECK(log_count("no draw_image") == 1);
+    deck_set(0, 1, 1, 125.0, 0.30, 1);
+    deck_set(1, 1, 0, 125.0, 0.00, 1);
+    tick_ms(STEP_MS);
+    struct az_draw d = { 0 };
+    draw_reset();
+    g_sdesc[0].on_paint(&d, g_splace[0], g_sdesc[0].user);
+    CHECK(g_nfill == 1 && g_nimg == 0 && g_ntext == 1 && strcmp(g_text[0].s, "TEMPO") == 0);
+}
+
+TEST(page_tempo_line)
+{
+    CHECK(load_mod(0) == 0);
+    deck_set(0, 1, 1, 125.0, 0.30, 1);
+    deck_set(1, 1, 0, 125.0, 0.00, 1);
+    tick_ms(STEP_MS);
+    CHECK(has("Tempo: matched (125.00 / 125.00)"));
+    g_fd[1].bpm = 122.0;
+    for (int i = 0; i <= SYM_SETTLE_TICKS; i++) tick_ms(STEP_MS);
+    CHECK(has("Tempo: differs (125.00 / 122.00)"));
+    g_fd[1].loaded = 0;
+    tick_ms(STEP_MS);
+    CHECK(has("Tempo: -"));
 }
 
 TEST(page_view_not_a_reason)
@@ -512,6 +622,10 @@ int main(int argc, char **argv)
         T(page_playing_apart),
         T(page_difference_and_place),
         T(page_each_reason),
+        T(tempo_symbol_while_deck_waits),
+        T(tempo_symbol_both_stopped_and_hidden_cases),
+        T(tempo_symbol_without_draw_image),
+        T(page_tempo_line),
         T(page_view_not_a_reason),
         T(page_refresh_rate),
 #undef T

@@ -10,6 +10,8 @@
 #define LOCK_HARD_OUT_MS  10.0 /* locked: |delta| over this unlocks at once */
 #define TEMPO_TOL       0.002  /* |bpm1 - bpm2| / mean */
 #define TEMPO_HOLD_MS   2000   /* a shown sign survives a tempo mismatch this long (jog nudges) */
+#define TEMPO_MATCH_BPM 0.05   /* the tempo symbol is green at or under this |bpm1 - bpm2| */
+#define TEMPO_SYM_HOLD_MS 250  /* the symbol changes colour only after the new answer held this long */
 #define TICK_GAP_MS     500    /* a tick later than this after the previous one starts fresh */
 #define DX_MAX          14     /* px; 1 px per ms */
 #define NUDGE_REDRAW_MS 125    /* at most 8 repaints a second while nudging */

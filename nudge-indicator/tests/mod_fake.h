@@ -222,6 +222,16 @@ struct textrec { char s[160]; uint32_t rgb; int x, y, px; };
 static struct fillrec g_fill[REC_MAX];
 static struct textrec g_text[REC_MAX];
 static int g_nfill, g_ntext;
+struct imgrec { int x, y, w, h; const unsigned char *rgba; };
+static struct imgrec g_img[REC_MAX];
+static int g_nimg;
+static int f_image(az_draw *d, int x, int y, const unsigned char *rgba, int w, int h)
+{
+    (void)d;
+    if (g_nimg < REC_MAX) g_img[g_nimg] = (struct imgrec){ x, y, w, h, rgba };
+    g_nimg++;
+    return 0;
+}
 static void f_fill(az_draw *d, int x, int y, int w, int h, uint32_t c)
 {
     (void)d;
@@ -244,7 +254,7 @@ static void f_header(az_draw *d, const char *t) { f_text(d, 0, 0, t, 20, 0); }
 static int f_text_width(const char *s, int px) { return (int)strlen(s) * px * 3 / 5; }
 static uint32_t f_color(int role) { return role == AZ_COL_BG ? 0 : 0xffffff; }
 static int f_row_height(az_draw *d) { (void)d; return 50; }
-UN static void draw_reset(void) { g_nfill = g_ntext = 0; }
+UN static void draw_reset(void) { g_nfill = g_ntext = g_nimg = 0; }
 UN static int text_eq(const char *s)
 {
     for (int i = 0; i < g_ntext && i < REC_MAX; i++)
@@ -253,7 +263,7 @@ UN static int text_eq(const char *s)
 }
 
 /* ---- the core ---- */
-enum { FK_NO_LOOKUP = 1, FK_NO_ROWS = 2, FK_NO_DECK_GRID = 4 };
+enum { FK_NO_LOOKUP = 1, FK_NO_ROWS = 2, FK_NO_DECK_GRID = 4, FK_NO_IMAGE = 8 };
 
 /* every service this mod can use; the flags take some away */
 UN static void fake_core(az_core_v1 *c, int flags)
@@ -266,6 +276,7 @@ UN static void fake_core(az_core_v1 *c, int flags)
     c->draw_header = f_header;
     c->draw_text = f_text;
     c->fill_rect = f_fill;
+    if (!(flags & FK_NO_IMAGE)) c->draw_image = f_image;
     c->color = f_color;
     c->row_height = f_row_height;
     c->text_width = f_text_width;

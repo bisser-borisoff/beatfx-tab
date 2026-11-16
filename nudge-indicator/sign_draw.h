@@ -12,6 +12,8 @@ typedef struct {
     int locked;  /* 1: the green line only */
     int dx;      /* deck 2's tick, px right of deck 1's, -DX_MAX..DX_MAX */
     int ms;      /* the number, 0..999 */
+    int tempo;   /* 1: the tempo symbol instead of the reading (locked, dx and ms are not used) */
+    int match;   /* the symbol: 1 green (tempos match), 0 grey outlines (they differ) */
 } sign_state;
 
 /* Paints the BOX_W x BOX_H box whose top left is area.x, area.y. Draw helpers only. */

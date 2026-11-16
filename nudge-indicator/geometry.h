@@ -20,6 +20,14 @@
 #define UNIT_GAP  3
 #define UNIT_PX   12
 #define UNIT_DY   6     /* top of the "ms" line box; tuned in the emulator (Task 7) */
+#define SYM_W     26    /* the tempo symbol: two circles of 16 px, their centres 10 px apart */
+#define SYM_H     16
+#define SYM_DX    4     /* centred on the fixed tick (x 15..19) */
+#define SYM_DY    4     /* rows 4..19, centred on the two ticks (rows 2..21) */
+#define WORD      "TEMPO"
+#define WORD_DX   NUM_DX
+#define WORD_PX   UNIT_PX
+#define WORD_DY   3     /* top of the word's line box: its ink (9 rows of capitals) then sits on rows 8..16, centred on the symbol (measured in the emulator, 2026-11-16) */
 #define COL_BG    0x000000
 #define COL_TICK  0xE1E1E1
 #define COL_NUM   0xE1E1E1

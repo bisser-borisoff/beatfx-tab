@@ -2,18 +2,26 @@
  *
  * sign_draw: the painter of the Nudge Indicator box. Unlocked: deck 1's tick fixed, deck 2's tick
  * shifted by dx pixels (1 px per ms), the difference as a number with a grey "ms". Locked: one
- * green line as tall as the two ticks together.
+ * green line as tall as the two ticks together. Tempo: the two-circle symbol where the ticks are and
+ * the word TEMPO where the number is, both grey while the tempos differ, green when they match.
  */
 #include <stdio.h>
 
 #include "geometry.h"
 #include "sign_draw.h"
+#include "symbol.h"
 
 #define NUM_BUF 16
 
 void sign_paint(const az_core_v1 *C, az_draw *d, az_rect area, const sign_state *s)
 {
     C->fill_rect(d, area.x, area.y, BOX_W, BOX_H, COL_BG);
+    if (s->tempo) {
+        if (AZ_HAS(C, draw_image))
+            C->draw_image(d, area.x + SYM_DX, area.y + SYM_DY, s->match ? SYM_MATCH : SYM_DIFF, SYM_W, SYM_H);
+        C->draw_text(d, area.x + WORD_DX, area.y + WORD_DY, WORD, WORD_PX, s->match ? COL_LOCK : COL_UNIT);
+        return;
+    }
     const int tx = area.x + TICK_DX;
     if (s->locked) {
         C->fill_rect(d, tx, area.y + TICK1_DY, TICK_W, TICK2_DY + TICK_H - TICK1_DY, COL_LOCK);
@@ -31,6 +39,7 @@ void sign_paint(const az_core_v1 *C, az_draw *d, az_rect area, const sign_state 
 
 int sign_same(const sign_state *a, const sign_state *b)
 {
+    if (a->tempo || b->tempo) return a->tempo == b->tempo && a->match == b->match;
     if (a->locked || b->locked) return a->locked == b->locked;
     return a->dx == b->dx && a->ms == b->ms;
 }

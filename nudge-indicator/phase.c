@@ -49,6 +49,33 @@ static pl_why gate(const pl_in *in)
     return PL_OK;
 }
 
+/* The screen is ours, decks 1 and 2 are loaded and both tempos are known: the tempo symbol can show. */
+static int tempo_ok(const pl_in *in)
+{
+    return in->row_on && !in->theme && in->deck_count == 2 && !in->deck34 && in->loaded[0] && in->loaded[1] &&
+           bpm_ok(in->bpm[0]) && bpm_ok(in->bpm[1]);
+}
+
+/* The symbol's answer: the first one counts at once, a change only after it held TEMPO_SYM_HOLD_MS. */
+static int tempo_match(pl_sm *sm, const pl_in *in)
+{
+    const int raw = fabs(in->bpm[0] - in->bpm[1]) <= TEMPO_MATCH_BPM;
+    if (!sm->sym_seen) {
+        sm->sym_seen = 1;
+        sm->sym_match = raw;
+        sm->sym_pend = 0;
+    } else if (raw == sm->sym_match) {
+        sm->sym_pend = 0;
+    } else if (!sm->sym_pend) {
+        sm->sym_pend = 1;
+        sm->sym_since = in->t_ms;
+    } else if ((uint32_t)(in->t_ms - sm->sym_since) >= TEMPO_SYM_HOLD_MS) {
+        sm->sym_match = raw;
+        sm->sym_pend = 0;
+    }
+    return sm->sym_match;
+}
+
 void pl_step(pl_sm *sm, const pl_in *in, pl_out *out)
 {
     out->state = PL_HIDDEN;
@@ -57,17 +84,21 @@ void pl_step(pl_sm *sm, const pl_in *in, pl_out *out)
     out->delta_ms = 0.0;
     out->dx = 0;
     out->ms = 0;
+    out->have_tempo = 0;
+    out->tempo_match = 0;
 
     /* a late tick starts fresh: nothing remembered, the previous state counts as hidden */
     if (sm->seen && (uint32_t)(in->t_ms - sm->last_t) > TICK_GAP_MS) {
         sm->near = 0;
         sm->tempo_bad = 0;
         sm->far = 0;
+        sm->sym_seen = 0;
         sm->state = PL_HIDDEN;
     }
     sm->seen = 1;
     sm->last_t = in->t_ms;
     const pl_state prev = sm->state;
+    const int prev_reading = prev == PL_NUDGE || prev == PL_LOCKED;
 
     pl_why why = gate(in);
     if (why == PL_OK) {
@@ -81,7 +112,7 @@ void pl_step(pl_sm *sm, const pl_in *in, pl_out *out)
         int tempo_diff = 0;
         if (fabs(in->bpm[0] - in->bpm[1]) / mean <= TEMPO_TOL) {
             sm->tempo_bad = 0;
-        } else if (prev == PL_HIDDEN) {
+        } else if (!prev_reading) {
             tempo_diff = 1;
         } else {
             if (!sm->tempo_bad) {
@@ -130,10 +161,17 @@ void pl_step(pl_sm *sm, const pl_in *in, pl_out *out)
         }
     }
     out->why = why;
-    if (out->state == PL_HIDDEN) {
+    if (out->state == PL_HIDDEN) { /* no reading: its timers start anew */
         sm->near = 0;
         sm->tempo_bad = 0;
         sm->far = 0;
+    }
+    if (tempo_ok(in)) {
+        out->have_tempo = 1;
+        out->tempo_match = tempo_match(sm, in);
+        if (out->state == PL_HIDDEN) out->state = PL_TEMPO; /* the symbol stands where the reading would */
+    } else {
+        sm->sym_seen = 0;
     }
     sm->state = out->state;
 }

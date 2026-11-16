@@ -76,12 +76,13 @@ static void brk_tempo(pl_in *in)   /* 0.24 %; leaves a reading an earlier break 
 
 static void test_gate_order(void)   /* one line per reason, each from a fresh pl_sm */
 {
-    struct { pl_why why; void (*brk)(pl_in *); } T[] = {
-        { PL_ROW_OFF, brk_row }, { PL_THEME, brk_theme }, { PL_NOT_2DECK, brk_count }, { PL_DECK34, brk_34 },
-        { PL_NO_TRACK_1, brk_load1 }, { PL_NO_TRACK_2, brk_load2 },
-        { PL_STOPPED_1, brk_play1 }, { PL_STOPPED_2, brk_play2 }, { PL_NO_GRID_1, brk_grid1 },
-        { PL_NO_GRID_2, brk_grid2 }, { PL_NO_TEMPO_1, brk_bpm1 }, { PL_NO_TEMPO_2, brk_bpm2 },
-        { PL_TEMPO_DIFF, brk_tempo },
+    /* hard: nothing at all is shown. Otherwise the tempo symbol stands in for the reading. */
+    struct { pl_why why; void (*brk)(pl_in *); int hard; } T[] = {
+        { PL_ROW_OFF, brk_row, 1 }, { PL_THEME, brk_theme, 1 }, { PL_NOT_2DECK, brk_count, 1 },
+        { PL_DECK34, brk_34, 1 }, { PL_NO_TRACK_1, brk_load1, 1 }, { PL_NO_TRACK_2, brk_load2, 1 },
+        { PL_STOPPED_1, brk_play1, 0 }, { PL_STOPPED_2, brk_play2, 0 }, { PL_NO_GRID_1, brk_grid1, 0 },
+        { PL_NO_GRID_2, brk_grid2, 0 }, { PL_NO_TEMPO_1, brk_bpm1, 1 }, { PL_NO_TEMPO_2, brk_bpm2, 1 },
+        { PL_TEMPO_DIFF, brk_tempo, 0 },
     };
     const int n = (int)(sizeof T / sizeof T[0]);
     for (int i = 0; i < n; i++) {
@@ -89,9 +90,10 @@ static void test_gate_order(void)   /* one line per reason, each from a fresh pl
         pl_in in = base(1000);
         T[i].brk(&in);
         pl_out o = run(&sm, in);
-        CHECK(o.state == PL_HIDDEN && o.why == T[i].why);
+        CHECK(o.state == (T[i].hard ? PL_HIDDEN : PL_TEMPO) && o.why == T[i].why);
+        CHECK(o.have_tempo == !T[i].hard);
     }
-    /* two breaks at once: the earlier one in the table wins */
+    /* two breaks at once: the earlier one in the table gives the reason; any hard one hides */
     for (int i = 0; i < n; i++) {
         for (int j = i + 1; j < n; j++) {
             pl_sm sm = {0};
@@ -99,7 +101,7 @@ static void test_gate_order(void)   /* one line per reason, each from a fresh pl
             T[i].brk(&in);
             T[j].brk(&in);
             pl_out o = run(&sm, in);
-            CHECK(o.state == PL_HIDDEN && o.why == T[i].why);
+            CHECK(o.state == (T[i].hard || T[j].hard ? PL_HIDDEN : PL_TEMPO) && o.why == T[i].why);
         }
     }
     /* and with everything fine the fresh machine is in the "settling" state, not hidden */
@@ -197,7 +199,7 @@ static void test_lock_hold_and_hysteresis(void)
         CHECK(o.state == PL_LOCKED);
         expect(&sm4, &t4, 5.5, 5, PL_LOCKED, PL_OK);
         { pl_in in = base(t4); in.playing[1] = 0; o = run(&sm4, in); t4 += TICK_MS; }
-        CHECK(o.state == PL_HIDDEN && o.why == PL_STOPPED_2);
+        CHECK(o.state == PL_TEMPO && o.why == PL_STOPPED_2);
         expect(&sm4, &t4, 2.0, 7, PL_NUDGE, PL_HOLDING);
         expect(&sm4, &t4, 2.0, 1, PL_LOCKED, PL_OK);
     }
@@ -211,14 +213,14 @@ static void test_tempo_hold(void)
     /* shown (NUDGE, delta 10 ms) */
     { pl_in in = base(t0 - TICK_MS); set_delta(&in, 10.0); o = run(&sm, in); }
     CHECK(o.state == PL_NUDGE && o.why == PL_APART);
-    /* bpm {125.0, 126.0} from t0: still NUDGE at t0+1960; HIDDEN, PL_TEMPO_DIFF at t0+2000 */
+    /* bpm {125.0, 126.0} from t0: still NUDGE at t0+1960; no reading (the tempo symbol), PL_TEMPO_DIFF at t0+2000 */
     for (uint32_t t = t0; t <= t0 + 1960; t += TICK_MS) {
         pl_in in = base(t); set_delta(&in, 10.0); in.bpm[1] = 126.0;
         o = run(&sm, in);
         CHECK(o.state == PL_NUDGE && o.why == PL_APART);
     }
     { pl_in in = base(t0 + 2000); set_delta(&in, 10.0); in.bpm[1] = 126.0; o = run(&sm, in); }
-    CHECK(o.state == PL_HIDDEN && o.why == PL_TEMPO_DIFF);
+    CHECK(o.state == PL_TEMPO && o.why == PL_TEMPO_DIFF);
 
     /* tempo back in range at t0+1000 clears the timer: a second mismatch needs 2000 ms again */
     {
@@ -238,16 +240,16 @@ static void test_tempo_hold(void)
             CHECK(o.state == PL_NUDGE && o.why == PL_APART);
         }
         { pl_in in = base(t1 + 2000); set_delta(&in, 10.0); in.bpm[1] = 126.0; o = run(&sm2, in); }
-        CHECK(o.state == PL_HIDDEN && o.why == PL_TEMPO_DIFF);
+        CHECK(o.state == PL_TEMPO && o.why == PL_TEMPO_DIFF);
     }
 
-    /* from HIDDEN, the same mismatch hides at once (never shows) */
+    /* with no reading up, the same mismatch is not held: the reading never shows, only the symbol */
     {
         pl_sm sm3 = {0};
         for (uint32_t t = t0; t < t0 + 3000; t += TICK_MS) {
             pl_in in = base(t); set_delta(&in, 10.0); in.bpm[1] = 126.0;
             o = run(&sm3, in);
-            CHECK(o.state == PL_HIDDEN && o.why == PL_TEMPO_DIFF);
+            CHECK(o.state == PL_TEMPO && o.why == PL_TEMPO_DIFF);
         }
     }
 }
@@ -266,9 +268,9 @@ static void test_stop_while_locked(void)
     { pl_in in = base(t); set_delta(&in, 40.0); o = run(&sm, in); t += TICK_MS; }
     CHECK(o.state == PL_NUDGE && o.why == PL_APART);
     CHECK(o.dx == DX_MAX && o.ms == 40);
-    /* then playing[1] = 0 -> HIDDEN */
+    /* then playing[1] = 0 -> no reading; the tempos are equal, so the green tempo symbol */
     { pl_in in = base(t); set_delta(&in, 80.0); in.playing[1] = 0; o = run(&sm, in); }
-    CHECK(o.state == PL_HIDDEN && o.why == PL_STOPPED_2);
+    CHECK(o.state == PL_TEMPO && o.why == PL_STOPPED_2 && o.tempo_match == 1 && o.have_delta == 0);
 }
 
 static void test_bad_readings(void)
@@ -288,7 +290,7 @@ static void test_bad_readings(void)
             pl_in in2 = base(1000);
             in2.ph[deck] = bad_ph[i];
             o = run(&sm2, in2);
-            CHECK(o.state == PL_HIDDEN && o.why == (deck == 0 ? PL_NO_GRID_1 : PL_NO_GRID_2));
+            CHECK(o.state == PL_TEMPO && o.why == (deck == 0 ? PL_NO_GRID_1 : PL_NO_GRID_2));
             CHECK(o.have_delta == 0 && isnan(o.delta_ms) == 0);
         }
     }
@@ -338,7 +340,7 @@ static void test_tick_gap_and_wrap(void)
             CHECK(o.state == PL_NUDGE);
         }
         { pl_in in = base(t); in.playing[1] = 0; set_delta(&in, 2.0); o = run(&sm, in); }
-        CHECK(o.state == PL_HIDDEN && o.why == PL_STOPPED_2);
+        CHECK(o.state == PL_TEMPO && o.why == PL_STOPPED_2);
         const uint32_t hidden_at = t;
         t += TICK_MS;
         for (int k = 0; k < 6; k++, t += TICK_MS) {   /* hidden_at+40 .. hidden_at+240 */
@@ -382,7 +384,7 @@ static void test_tick_gap_and_wrap(void)
             CHECK(o.state == PL_NUDGE && o.why == PL_APART);
         }
         { pl_in in = base(t0 + 1000 + 30000); set_delta(&in, 10.0); in.bpm[1] = 126.0; o = run(&sm, in); }
-        CHECK(o.state == PL_HIDDEN && o.why == PL_TEMPO_DIFF);
+        CHECK(o.state == PL_TEMPO && o.why == PL_TEMPO_DIFF);
     }
     /* the gap is "more than TICK_GAP_MS": exactly TICK_GAP_MS later is still the same run */
     {
@@ -395,13 +397,122 @@ static void test_tick_gap_and_wrap(void)
     }
 }
 
-static void test_half_tempo_hidden(void)
-{   /* bpm {64, 128}, ph equal -> HIDDEN, PL_TEMPO_DIFF */
+static void test_half_tempo_is_not_a_match(void)
+{   /* bpm {64, 128}, ph equal -> no reading, the grey symbol, PL_TEMPO_DIFF */
     pl_sm sm = {0};
     pl_in in = base(1000);
     in.bpm[0] = 64.0; in.bpm[1] = 128.0;
     pl_out o = run(&sm, in);
-    CHECK(o.state == PL_HIDDEN && o.why == PL_TEMPO_DIFF);
+    CHECK(o.state == PL_TEMPO && o.why == PL_TEMPO_DIFF && o.tempo_match == 0);
+}
+
+/* ---- the tempo symbol ---- */
+
+static pl_in waiting(uint32_t t, double bpm2)   /* deck 1 plays, deck 2 is loaded and stopped */
+{
+    pl_in in = base(t);
+    in.playing[1] = 0;
+    in.bpm[1] = bpm2;
+    return in;
+}
+
+static void test_tempo_symbol_threshold(void)
+{   /* each from a fresh machine: the first answer counts at once */
+    struct { double bpm2; int match; } T[] = {
+        { 125.0, 1 }, { 125.04, 1 }, { 124.96, 1 }, { 125.06, 0 }, { 124.94, 0 }, { 128.0, 0 }, { 62.5, 0 },
+    };
+    for (int i = 0; i < (int)(sizeof T / sizeof T[0]); i++) {
+        pl_sm sm = {0};
+        pl_out o = run(&sm, waiting(1000, T[i].bpm2));
+        CHECK(o.state == PL_TEMPO && o.have_tempo == 1 && o.tempo_match == T[i].match);
+        CHECK(o.why == PL_STOPPED_2 && o.have_delta == 0);
+    }
+    {   /* both stopped, and a deck without a grid: the symbol needs only the two tempos */
+        pl_sm sm = {0};
+        pl_in in = waiting(1000, 125.0);
+        in.playing[0] = 0;
+        in.grid_ok[0] = in.grid_ok[1] = 0;
+        pl_out o = run(&sm, in);
+        CHECK(o.state == PL_TEMPO && o.tempo_match == 1 && o.why == PL_STOPPED_1);
+    }
+    {   /* a bad tempo reading: nothing */
+        pl_sm sm = {0};
+        pl_out o = run(&sm, waiting(1000, NAN));
+        CHECK(o.state == PL_HIDDEN && o.have_tempo == 0 && o.why == PL_STOPPED_2);
+    }
+}
+
+static void test_tempo_symbol_debounce(void)
+{
+    pl_sm sm = {0};
+    uint32_t t = 1000;
+    pl_out o = run(&sm, waiting(t, 125.0));
+    CHECK(o.tempo_match == 1);
+    /* the tempos part: the green stays for TEMPO_SYM_HOLD_MS, then goes */
+    uint32_t t0 = t += TICK_MS;
+    for (; t - t0 < TEMPO_SYM_HOLD_MS; t += TICK_MS) {
+        o = run(&sm, waiting(t, 126.0));
+        CHECK(o.state == PL_TEMPO && o.tempo_match == 1);
+    }
+    o = run(&sm, waiting(t, 126.0));
+    CHECK(o.tempo_match == 0);
+    t += TICK_MS;
+    /* a blip shorter than the hold changes nothing, and the count starts anew after it */
+    o = run(&sm, waiting(t, 126.01)); t += TICK_MS;          /* still apart */
+    o = run(&sm, waiting(t, 125.0)); t += TICK_MS;           /* equal for 2 ticks */
+    o = run(&sm, waiting(t, 125.0)); t += TICK_MS;
+    CHECK(o.tempo_match == 0);
+    o = run(&sm, waiting(t, 126.0)); t += TICK_MS;           /* apart again: the blip is forgotten */
+    CHECK(o.tempo_match == 0);
+    t0 = t;
+    for (; t - t0 < TEMPO_SYM_HOLD_MS; t += TICK_MS) {
+        o = run(&sm, waiting(t, 125.0));
+        CHECK(o.tempo_match == 0);
+    }
+    o = run(&sm, waiting(t, 125.0));
+    CHECK(o.tempo_match == 1);
+    t += TICK_MS;
+    /* the answer is kept while the reading is up, and shows when a deck stops */
+    for (int k = 0; k < 10; k++, t += TICK_MS) {
+        o = run(&sm, base(t));
+        CHECK((o.state == PL_NUDGE || o.state == PL_LOCKED) && o.have_tempo == 1 && o.tempo_match == 1);
+    }
+    o = run(&sm, waiting(t, 125.0));
+    CHECK(o.state == PL_TEMPO && o.tempo_match == 1);
+    /* a late tick starts fresh: the first answer counts at once */
+    t += TICK_GAP_MS + 1;
+    o = run(&sm, waiting(t, 126.0));
+    CHECK(o.state == PL_TEMPO && o.tempo_match == 0);
+    /* so does a spell with nothing to compare */
+    t += TICK_MS;
+    { pl_in in = waiting(t, 126.0); in.loaded[1] = 0; o = run(&sm, in); }
+    CHECK(o.state == PL_HIDDEN && o.have_tempo == 0);
+    t += TICK_MS;
+    o = run(&sm, waiting(t, 125.0));
+    CHECK(o.state == PL_TEMPO && o.tempo_match == 1);
+}
+
+static void test_tempo_diff_while_playing(void)
+{   /* a reading is up; the tempos part by 0.24 %: the reading holds TEMPO_HOLD_MS, then the grey symbol */
+    pl_sm sm = {0};
+    uint32_t t = 1000;
+    pl_out o = run(&sm, base(t));
+    CHECK(o.state == PL_NUDGE);
+    uint32_t t0 = t += TICK_MS;
+    for (; t - t0 < TEMPO_HOLD_MS; t += TICK_MS) {
+        pl_in in = base(t);
+        in.bpm[1] = 125.3;
+        o = run(&sm, in);
+        CHECK(o.state == PL_NUDGE || o.state == PL_LOCKED);
+    }
+    { pl_in in = base(t); in.bpm[1] = 125.3; o = run(&sm, in); t += TICK_MS; }
+    CHECK(o.state == PL_TEMPO && o.why == PL_TEMPO_DIFF && o.tempo_match == 0);
+    /* from the symbol a mismatch is not held: still the symbol on the next tick */
+    { pl_in in = base(t); in.bpm[1] = 125.3; o = run(&sm, in); t += TICK_MS; }
+    CHECK(o.state == PL_TEMPO && o.why == PL_TEMPO_DIFF);
+    /* the tempos meet again: the reading is back at once */
+    o = run(&sm, base(t));
+    CHECK(o.state == PL_NUDGE);
 }
 
 int main(void)
@@ -414,7 +525,10 @@ int main(void)
     test_stop_while_locked();
     test_bad_readings();
     test_tick_gap_and_wrap();
-    test_half_tempo_hidden();
+    test_half_tempo_is_not_a_match();
+    test_tempo_symbol_threshold();
+    test_tempo_symbol_debounce();
+    test_tempo_diff_while_playing();
     printf("test_phase: %d/%d checks passed\n", passed, total);
     return passed == total ? 0 : 1;
 }

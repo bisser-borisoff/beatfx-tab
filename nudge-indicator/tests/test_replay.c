@@ -68,14 +68,14 @@ static void test_apart_is_nudging(void)
     }
 }
 
-static void test_diff_tempo_is_hidden(void)
+static void test_diff_tempo_is_the_grey_symbol(void)
 {
     pl_sm sm = {0};
     for (int i = 0; i < REPLAY_DIFF_TEMPO_N; i++) {
         pl_in in = tick_in(&REPLAY_DIFF_TEMPO[i]);
         pl_out out;
         pl_step(&sm, &in, &out);
-        int ok = out.state == PL_HIDDEN && out.why == PL_TEMPO_DIFF;
+        int ok = out.state == PL_TEMPO && out.why == PL_TEMPO_DIFF && out.have_tempo && !out.tempo_match;
         if (!ok) printf("diff tempo: tick %d state %d why %d\n", i, (int)out.state, (int)out.why);
         CHECK(ok);
     }
@@ -85,7 +85,7 @@ int main(void)
 {
     test_sync_locks_and_stays();
     test_apart_is_nudging();
-    test_diff_tempo_is_hidden();
+    test_diff_tempo_is_the_grey_symbol();
     printf("test_replay: %d/%d checks passed\n", passed, total);
     return passed == total ? 0 : 1;
 }
